@@ -9,6 +9,7 @@ from django import forms
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+
 # Create your views here.
 def index(request):
-    return HttpResponse("yesh")
+    return HttpResponse("siuiuii")
