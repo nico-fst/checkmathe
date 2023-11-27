@@ -21,5 +21,4 @@ from checkweb import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("checkweb.urls")),  # statt immer checkweb/ für App einzugeben
-    # path("", views.index, name="index"),
 ]
