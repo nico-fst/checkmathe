@@ -44,11 +44,21 @@ def logout_view(request):
     return HttpResponseRedirect(reverse("login"))
 
 
+# New Students
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
         email = request.POST["email"]
-        # role = Role.objects.get(title="Student")
+        ptc = request.POST["personal_teacher_code"]
+
+        # Only register as teacher, if a valid PTC was provided
+        if ptc == "Amaru":  # TODO as private environment var
+            role = Role.objects.get(title="Teacher")
+        elif ptc:
+            return render(request, "checkweb/register.html", {"message": "Wrong PTC given..."})
+        else:
+            # role = Role.objects.get(title="Student")
+            return render(request, "checkweb/register.html", {"message": ptc})
 
         # Ensure password matches confirmation
         password = request.POST["password"]
@@ -58,10 +68,14 @@ def register(request):
 
         # Attempt to create new user
         try:
-            user = User.objects.create_user(username, email, password)
+            user = User.objects.create_user(username, email, password, role=role)
             user.save()
         except IntegrityError:
-            return render(request, "checkweb/register.html", {"message": "Username already taken."})
+            return render(
+                request,
+                "checkweb/register.html",
+                {"message": "Username already taken."},
+            )
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
     else:
@@ -69,24 +83,16 @@ def register(request):
 
 
 class TutForm(forms.Form):
-    date = forms.DateField(
-        label="Select a Date", widget=forms.DateInput(attrs={"type": "date"})
-    )
+    date = forms.DateField(label="Select a Date", widget=forms.DateInput(attrs={"type": "date"}))
     duration = forms.IntegerField(
         label="Duration",
         validators=[MinValueValidator(0)],
         widget=forms.NumberInput(attrs={"min": 0}),
     )
     subject = forms.ModelChoiceField(queryset=Subject.objects.all(), label="Subject")
-    teacher = forms.ModelChoiceField(
-        queryset=User.objects.filter(role__title="Teacher"), label="Teacher"
-    )
-    student = forms.ModelChoiceField(
-        queryset=User.objects.filter(role__title="Student"), label="Student"
-    )
-    content = forms.CharField(
-        label="Content", widget=forms.Textarea(attrs={"rows": 4, "cols": 50})
-    )
+    teacher = forms.ModelChoiceField(queryset=User.objects.filter(role__title="Teacher"), label="Teacher")
+    student = forms.ModelChoiceField(queryset=User.objects.filter(role__title="Student"), label="Student")
+    content = forms.CharField(label="Content", widget=forms.Textarea(attrs={"rows": 4, "cols": 50}))
 
 
 @csrf_exempt
@@ -130,9 +136,7 @@ def tutoring_view(request, tut_id):
     try:
         tut = Tutoring.objects.get(id=tut_id)
     except Tutoring.DoesNotExist:
-        return JsonResponse(
-            {"error": f"Tutoring with ID {tut_id} does not exist."}, status=404
-        )
+        return JsonResponse({"error": f"Tutoring with ID {tut_id} does not exist."}, status=404)
 
     return render(request, "checkweb/tutoring.html", {"tut": tut})
 
@@ -148,6 +152,7 @@ def tutorings(request, user_id):
         {"tuts_given": serialized_tuts_given, "tuts_taken": serialized_tuts_taken},
         safe=False,
     )
+
 
 @login_required
 def history_view(request):
