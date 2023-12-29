@@ -2,6 +2,8 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.utils import timezone
 from .models import Role, User, Subject, Tutoring
+import datetime
+from django.urls import reverse
 
 
 class DB_ConsistencyTestCase(TestCase):
@@ -51,6 +53,9 @@ class TutoringViewsTestCase(TestCase):
         self.student.role = Role.objects.create(title="Student")
         self.student.save()
 
+        self.subject = Subject.objects.create(title="Astrologie")
+        self.subject.save()
+
         self.tut = Tutoring.objects.create(
             date="2023-01-01",
             duration=45,
@@ -61,10 +66,38 @@ class TutoringViewsTestCase(TestCase):
         )
         self.tut.save()
 
+    def test_create_legal(self):
+        client = Client()
+        client.force_login(self.student)
+
+        form_data = {
+            "date": "1984-01-01",
+            "duration": 45,
+            "subject": self.tut.id,  # ID instead of Object!
+            "teacher": self.teacher.id,
+            "student": self.student.id,
+            "content": "Demo tutoring session Lorem ipsum.",
+        }
+
+        # send POST to view
+        response = client.post(reverse("tutoring"), data=form_data)
+
+        self.assertEqual(response.status_code, 302)  # form submission successful?
+        self.assertEqual(Tutoring.objects.count(), 2)  # new Tutoring object created?
+
+        # Check if the Tutoring object has the correct attributes
+        new_tut = Tutoring.objects.get(subject=Subject.objects.get(title="Astrologie"))
+
+        self.assertEqual(new_tut.date, datetime.date(1984, 1, 1))
+        self.assertEqual(new_tut.duration, 45)
+        self.assertEqual(new_tut.teacher, self.teacher)
+        self.assertEqual(new_tut.student, self.student)
+        self.assertEqual(new_tut.content, "Demo tutoring session Lorem ipsum.")
+
     def test_delete_illegal(self):
         client = Client()
         client.force_login(self.student)
-        response = client.post(f"/delete_tut/{self.tut.id}/")
+        response = client.post(reverse("delete_tut", args=[self.tut.id]))
 
         self.assertEqual(response.status_code, 403)
         self.assertTrue(Tutoring.objects.filter(id=self.tut.id).exists())  # validate that not deleted
@@ -72,7 +105,7 @@ class TutoringViewsTestCase(TestCase):
     def test_delete_legal(self):
         client = Client()
         client.force_login(self.teacher)
-        response = client.post(f"/delete_tut/{self.tut.id}/")
+        response = client.post(reverse("delete_tut", args=[self.tut.id]))
 
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
         self.assertFalse(Tutoring.objects.filter(id=self.tut.id).exists())  # validate deletion

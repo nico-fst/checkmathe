@@ -115,7 +115,8 @@ class TutForm(forms.Form):
 
 @csrf_exempt
 @login_required
-def tutoring(request, tut_id):
+def tutoring(request, tut_id=None):
+    # POST: create new Tutoring instance
     if request.method == "POST":
         form = TutForm(request.POST)
         if form.is_valid():
@@ -129,8 +130,10 @@ def tutoring(request, tut_id):
             )
             new_tut.save()
             return HttpResponseRedirect(reverse("tutoring_view", args=[new_tut.id]))
-        # else:
+        else:
+            print("Form errors:", form.errors)
 
+    # if GET or PUT: search Tutoring instance
     try:
         tut = Tutoring.objects.get(id=tut_id)
     except Tutoring.DoesNotExist:
@@ -139,6 +142,7 @@ def tutoring(request, tut_id):
     if request.method == "GET":
         return JsonResponse(tut.serialize())
 
+    # PUT: update given values
     elif request.method == "PUT":
         data = json.loads(request.body)
         try:
@@ -213,7 +217,8 @@ def group_tutorings_by_month(request, student_id):
         month_objects[month] = {
             "count": len(tutorings_for_month),
             "tutorings": tutorings_for_month,
-            "sum_money": money_for_month}
+            "sum_money": money_for_month,
+        }
     return month_objects.items()
 
 
@@ -240,6 +245,7 @@ def delete_tut(request, tut_id):
     try:
         tut = Tutoring.objects.get(id=tut_id)
 
+        # if sb else than the own teacher tries to delete the tut
         if request.user != tut.teacher:
             return HttpResponseForbidden("Permission denied")
 
