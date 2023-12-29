@@ -100,5 +100,18 @@ def tutorings(request, user_id):
     )
 
 
+def history_view(request, user_id):
+    tuts_given = Tutoring.objects.filter(teacher=user_id)
+    serialized_tuts_given = [t.serialize() for t in tuts_given]
+
+    tuts_taken = Tutoring.objects.filter(student=user_id)
+    serialized_tuts_taken = [t.serialize() for t in tuts_taken]
+
+    return render(request, "checkweb/history.html",
+        {"tuts_given": serialized_tuts_given,
+         "tuts_taken": serialized_tuts_taken}
+    )
+
+
 def new_tut(request):
     return render(request, "checkweb/new_tut.html", {"form": TutForm()})
