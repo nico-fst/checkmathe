@@ -10,6 +10,9 @@ from django import forms
 from django.views.decorators.csrf import csrf_exempt
 from django.core.validators import MinValueValidator
 from functools import wraps
+from django.db import models
+from django.db.models.functions import TruncMonth
+from django.db.models import Count
 import json
 
 from .models import Role, User, Subject, Tutoring
@@ -43,7 +46,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse("index"))
+            return render(request, "checkweb/index.html", {"message": "Login successfull"})
         else:
             return render(
                 request,
@@ -92,7 +95,7 @@ def register(request):
                 {"message": "Username already taken."},
             )
         login(request, user)
-        return HttpResponseRedirect(reverse("index"))
+        return render(request, "checkweb/index.html", {"message": "Registered successfull"})
     else:
         return render(request, "checkweb/register.html")
 
@@ -176,17 +179,44 @@ def tutorings(request, user_id):
 
 @csrf_exempt
 @login_required
-def history_view(request):
-    tuts_given = Tutoring.objects.filter(teacher=request.user)
-    serialized_tuts_given = [t.serialize() for t in tuts_given]
+def group_tutorings_by_month(request, student_id):
+    # group by month, count tuts per month
+    result = Tutoring.objects.annotate(month=TruncMonth("date")).values("month").annotate(count=Count("id"))
 
-    tuts_taken = Tutoring.objects.filter(student=request.user)
-    serialized_tuts_taken = [t.serialize() for t in tuts_taken]
+    month_objects = {}
+    for entry in result:
+        month = entry["month"]
+        # collect relevant Tutorings in current month
 
+        if request.user.role.title == "Teacher":  # filter tutorings given as teacher
+            if student_id is not None:  # filter for current month, year, teacher INCLUDING student
+                filter_student = User.objects.get(id=student_id)
+                tutorings_for_month = Tutoring.objects.filter(
+                    date__month=month.month, date__year=month.year, teacher=request.user, student=filter_student
+                )
+                print("EINS")
+            else:  # filter WITHOUT specific student
+                tutorings_for_month = Tutoring.objects.filter(
+                    date__month=month.month, date__year=month.year, teacher=request.user
+                )
+                print("ZWEI")
+        else:  # filter tutorings taken as student
+            tutorings_for_month = Tutoring.objects.filter(
+                date__month=month.month, date__year=month.year, student=request.user
+            )
+            print("DREI")
+        # save collected data
+        month_objects[month] = {"count": len(tutorings_for_month), "tutorings": tutorings_for_month}
+    return month_objects.items()
+
+
+@csrf_exempt
+@login_required
+def history_view(request, student_id=None):
     return render(
         request,
         "checkweb/history.html",
-        {"tuts_given": tuts_given, "tuts_taken": tuts_taken},
+        {"tuts_by_month": group_tutorings_by_month(request, student_id)},
     )
 
 

@@ -13,7 +13,7 @@
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">CheckMathe</a>
+        <a class="navbar-brand" href="/">CheckMathe</a>
     
         <div>
             <ul class="navbar-nav mr-auto">
@@ -49,12 +49,12 @@
             </ul>
         </div>
     </nav>
-
-    {% if message %}
-    <div>{{ message }}</div>
-    {% endif %}
     
     <div class="body" style="margin: 25px;">
+        {% if message %}
+        <div>{{ message }}</div>
+        {% endif %}
+
         {% block body %}
         {% endblock %}
     </div>

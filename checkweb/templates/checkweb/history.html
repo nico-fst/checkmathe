@@ -5,51 +5,31 @@
 
 <h1>History of Tutorings</h1>
 
-{% if tuts_given %}
-<h2>Tutorings Given</h2>
-<table>
-    <tr>
-        <th>Date</th>
-        <th>Student</th>
-        <th>Subject</th>
-        <th>Duration</th>
-        <th>Content</th>
-    </tr>
-    {% for tut in tuts_given %}
-    <tr>
-        <td>{{tut.date}}</td>
-        <td>{{tut.student.username}}</td>
-        <td>{{tut.subject.title}}</td>
-        <td>{{tut.duration}}</td>
-        <td><a href="{% url 'tutoring_view' tut.id %}">{{tut.content}}</a></td>
-    </tr>
-    {% endfor %}
-</table>
+{% for month, data in tuts_by_month %}
+{% if data.count > 0 %}
+    <h2>{{ month|date:"Y-m" }}</h2>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Student</th>
+            <th>Teacher</th>
+            <th>Subject</th>
+            <th>Duration</th>
+            <th>Content</th>
+        </tr>
+        {% for tut in data.tutorings %}
+        <tr>
+            <td>{{tut.date}}</td>
+            <td>{{tut.student.username}}</td>
+            <td>{{tut.teacher.username}}</td>
+            <td>{{tut.subject.title}}</td>
+            <td>{{tut.duration}}</td>
+            <td><a href="{% url 'tutoring_view' tut.id %}">{{tut.content}}</a></td>
+        </tr>
+        {% endfor %}
+    </table>
 {% endif %}
-
-{% if tuts_taken %}
-<h2>Tutorings Taken</h2>
-<table>
-    <tr>
-        <th>Date</th>
-        <th>Teacher</th>
-        <th>Subject</th>
-        <th>Duration</th>
-        <th>Content</th>
-    </tr>
-    {% for tut in tuts_taken %}
-    <tr>
-        <td>{{tut.date}}</td>
-        <td>{{tut.teacher.username}}</td>
-        <td>{{tut.subject.title}}</td>
-        <td>{{tut.duration}}</td>
-        <td><a href="{% url 'tutoring_view' tut.id %}">{{tut.content}}</a></td>
-    </tr>
-    {% endfor %}
-</table>
-{% endif %}
-
-
+{% endfor %}
 
 {% endblock %}
 
