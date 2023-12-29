@@ -1,0 +1,58 @@
+{% extends "checkweb/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<h1>History of Tutorings</h1>
+
+{%if tuts_given %}
+<h2>Tutorings Given</h2>
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Student</th>
+        <th>Subject</th>
+        <th>Duration</th>
+        <th>Content</th>
+    </tr>
+    {% for tut in tuts_given %}
+    <tr>
+        <td>{{tut.date}}</td>
+        <td>{{tut.student.username}}</td>
+        <td>{{tut.subject.title}}</td>
+        <td>{{tut.duration}}</td>
+        <td>{{tut.content}}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{%if tuts_taken %}
+<h2>Tutorings Taken</h2>
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Teacher</th>
+        <th>Subject</th>
+        <th>Duration</th>
+        <th>Content</th>
+    </tr>
+    {% for tut in tuts_taken %}
+    <tr>
+        <td>{{tut.date}}</td>
+        <td>{{tut.teacher.username}}</td>
+        <td>{{tut.subject.title}}</td>
+        <td>{{tut.duration}}</td>
+        <td>{{tut.content}}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+
+
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'checkweb/history.js' %}"></script>
+{% endblock %}
