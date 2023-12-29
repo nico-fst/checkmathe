@@ -177,6 +177,10 @@ def tutorings(request, user_id):
     )
 
 
+def calc_stundenkosten(user, tut):
+    return round(user.preis_pro_45 * (tut.duration / 45), 2)
+
+
 @csrf_exempt
 @login_required
 def group_tutorings_by_month(request, student_id):
@@ -194,19 +198,22 @@ def group_tutorings_by_month(request, student_id):
                 tutorings_for_month = Tutoring.objects.filter(
                     date__month=month.month, date__year=month.year, teacher=request.user, student=filter_student
                 )
-                print("EINS")
             else:  # filter WITHOUT specific student
                 tutorings_for_month = Tutoring.objects.filter(
                     date__month=month.month, date__year=month.year, teacher=request.user
                 )
-                print("ZWEI")
         else:  # filter tutorings taken as student
             tutorings_for_month = Tutoring.objects.filter(
                 date__month=month.month, date__year=month.year, student=request.user
             )
-            print("DREI")
+
+        money_for_month = sum(calc_stundenkosten(tut.student, tut) for tut in tutorings_for_month)
+
         # save collected data
-        month_objects[month] = {"count": len(tutorings_for_month), "tutorings": tutorings_for_month}
+        month_objects[month] = {
+            "count": len(tutorings_for_month),
+            "tutorings": tutorings_for_month,
+            "sum_money": money_for_month}
     return month_objects.items()
 
 
