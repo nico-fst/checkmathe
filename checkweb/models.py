@@ -17,10 +17,11 @@ class Role(models.Model):
     # Ensure title being in TITLE_CHOICES
     def save(self, *args, **kwargs):
         if self.title not in [choice[0] for choice in self.TITLE_CHOICES]:
-            raise ValueError(
-                f"Invalid role title: {self.title}. It must be 'Student', 'Teacher', or 'Admin'."
-            )
+            raise ValueError(f"Invalid role title: {self.title}. It must be 'Student', 'Teacher', or 'Admin'.")
         super().save(*args, **kwargs)
+
+    def serialize(self):
+        return {"title": self.title}
 
 
 class User(AbstractUser):
@@ -28,12 +29,27 @@ class User(AbstractUser):
     preis_pro_45 = models.FloatField(null=True, blank=True)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, blank=True, null=True)
 
+    def __str__(self):
+        return f"[{self.id}] {self.username}"
+
+    def serialize(self):
+        return {
+            "username": self.username,
+            "user_id": self.id,
+            "phone_number": self.phone_number,
+            "preis_pro_45": self.preis_pro_45,
+            "role": self.role.serialize()
+        }
+
 
 class Subject(models.Model):
     title = models.CharField(max_length=30)
 
     def __str__(self):
         return self.title
+    
+    def serialize(self):
+        return {"title": self.title}
 
 
 class Tutoring(models.Model):
@@ -51,4 +67,14 @@ class Tutoring(models.Model):
     content = models.TextField()
 
     def __str__(self):
-        return f"({self.date}) {self.student} by {self.teacher} [{self.subject}]"
+        return f"[{self.id}] ({self.date}) {self.student} by {self.teacher} [{self.subject}]"
+
+    def serialize(self):
+        return {
+            "date": self.date,
+            "duration": self.duration,
+            "subject": self.subject.serialize(),
+            "teacher": self.teacher.serialize(),
+            "student": self.student.serialize(),
+            "content": self.content
+        }
