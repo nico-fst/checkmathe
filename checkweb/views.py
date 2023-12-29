@@ -31,6 +31,7 @@ class TutForm(forms.Form):
     content = forms.CharField(label="Content", widget=forms.Textarea(attrs={"rows": 4, "cols": 50}))
 
 
+@csrf_exempt
 def tutoring(request, tut_id):
     if request.method == "POST":
         form = TutForm(request.POST)

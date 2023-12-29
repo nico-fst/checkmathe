@@ -5,12 +5,16 @@
 
 <h1>Ausgewähltes Tutoring</h1>
 <ul>
-    <li>Date: {{tut.date}}</li>
-    <li>Duration: {{tut.duration}}</li>
+    <li>Date: <span id="tut_date">{{tut.date}}</span> <button data-tut_id="{{tut.id}}" id="edit-date">Edit</button></li>
+    <li>Duration: {{tut.duration}} <button data-tut_id="{{tut.id}}" id="edit-duration">Edit</button></li></li>
     <li>Subject: {{tut.subject}}</li>
     <li>Teacher: {{tut.teacher.first_name}} {{tut.teacher.last_name}}</li>
     <li>Student: {{tut.student.first_name}} {{tut.student.last_name}}</li>
 </ul>
 <p>Content: {{tut.content}}</p>
 
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'checkweb/tutoring.js' %}"></script>
 {% endblock %}
