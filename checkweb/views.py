@@ -15,7 +15,56 @@ from .models import Role, User, Subject, Tutoring
 
 
 def index(request):
-    return HttpResponse("siugt")
+    return render(request, "checkweb/index.html")
+
+
+def login_view(request):
+    if request.method == "POST":
+        # Attempt to sign user in
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate(request, username=username, password=password)
+
+        # Check if authentication successful
+        if user is not None:
+            login(request, user)
+            return HttpResponseRedirect(reverse("index"))
+        else:
+            return render(
+                request,
+                "checkweb/login.html",
+                {"message": "Invalid username and/or password."},
+            )
+    else:
+        return render(request, "checkweb/login.html")
+
+
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect(reverse("login"))
+
+
+def register(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        email = request.POST["email"]
+
+        # Ensure password matches confirmation
+        password = request.POST["password"]
+        confirmation = request.POST["confirmation"]
+        if password != confirmation:
+            return render(request, "checkweb/register.html", {"message": "Passwords must match."})
+
+        # Attempt to create new user
+        try:
+            user = User.objects.create_user(username, email, password)
+            user.save()
+        except IntegrityError:
+            return render(request, "checkweb/register.html", {"message": "Username already taken."})
+        login(request, user)
+        return HttpResponseRedirect(reverse("index"))
+    else:
+        return render(request, "checkweb/register.html")
 
 
 class TutForm(forms.Form):
@@ -99,17 +148,18 @@ def tutorings(request, user_id):
         safe=False,
     )
 
-
-def history_view(request, user_id):
-    tuts_given = Tutoring.objects.filter(teacher=user_id)
+@login_required
+def history_view(request):
+    tuts_given = Tutoring.objects.filter(teacher=request.user)
     serialized_tuts_given = [t.serialize() for t in tuts_given]
 
-    tuts_taken = Tutoring.objects.filter(student=user_id)
+    tuts_taken = Tutoring.objects.filter(student=request.user)
     serialized_tuts_taken = [t.serialize() for t in tuts_taken]
 
-    return render(request, "checkweb/history.html",
-        {"tuts_given": serialized_tuts_given,
-         "tuts_taken": serialized_tuts_taken}
+    return render(
+        request,
+        "checkweb/history.html",
+        {"tuts_given": serialized_tuts_given, "tuts_taken": serialized_tuts_taken},
     )
 
 
