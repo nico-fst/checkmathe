@@ -19,16 +19,24 @@ def index(request):
 
 
 class TutForm(forms.Form):
-    date = forms.DateField(label="Select a Date", widget=forms.DateInput(attrs={"type": "date"}))
+    date = forms.DateField(
+        label="Select a Date", widget=forms.DateInput(attrs={"type": "date"})
+    )
     duration = forms.IntegerField(
         label="Duration",
         validators=[MinValueValidator(0)],
         widget=forms.NumberInput(attrs={"min": 0}),
     )
     subject = forms.ModelChoiceField(queryset=Subject.objects.all(), label="Subject")
-    teacher = forms.ModelChoiceField(queryset=User.objects.filter(role__title="Teacher"), label="Teacher")
-    student = forms.ModelChoiceField(queryset=User.objects.filter(role__title="Student"), label="Student")
-    content = forms.CharField(label="Content", widget=forms.Textarea(attrs={"rows": 4, "cols": 50}))
+    teacher = forms.ModelChoiceField(
+        queryset=User.objects.filter(role__title="Teacher"), label="Teacher"
+    )
+    student = forms.ModelChoiceField(
+        queryset=User.objects.filter(role__title="Student"), label="Student"
+    )
+    content = forms.CharField(
+        label="Content", widget=forms.Textarea(attrs={"rows": 4, "cols": 50})
+    )
 
 
 @csrf_exempt
@@ -59,19 +67,9 @@ def tutoring(request, tut_id):
     elif request.method == "PUT":
         data = json.loads(request.body)
         try:
-            if data.get("date") is not None:
-                tut.date = data["date"]
-            if data.get("duration") is not None:
-                tut.duration = data["duration"]
-            if data.get("subject") is not None:
-                tut.subject = data["subject"]
-            if data.get("teacher") is not None:
-                tut.teacher = data["teacher"]
-            if data.get("student") is not None:
-                tut.student = data["student"]
-            if data.get("content") is not None:
-                tut.content = data["content"]
-
+            # change every item reveiced
+            for key, value in data.items():
+                setattr(tut, key, value)
             tut.save()
             return HttpResponse(status=204)
         except ValueError as e:
@@ -100,6 +98,7 @@ def tutorings(request, user_id):
         {"tuts_given": serialized_tuts_given, "tuts_taken": serialized_tuts_taken},
         safe=False,
     )
+
 
 def new_tut(request):
     return render(request, "checkweb/new_tut.html", {"form": TutForm()})
