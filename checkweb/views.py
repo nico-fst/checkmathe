@@ -48,6 +48,7 @@ def register(request):
     if request.method == "POST":
         username = request.POST["username"]
         email = request.POST["email"]
+        # role = Role.objects.get(title="Student")
 
         # Ensure password matches confirmation
         password = request.POST["password"]
@@ -163,5 +164,6 @@ def history_view(request):
     )
 
 
+@login_required
 def new_tut(request):
     return render(request, "checkweb/new_tut.html", {"form": TutForm()})
