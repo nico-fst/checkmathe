@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
 
 
 class Role(models.Model):
@@ -35,7 +36,7 @@ class User(AbstractUser):
     def serialize(self):
         return {
             "username": self.username,
-            "user_id": self.id,
+            "id": self.id,
             "phone_number": self.phone_number,
             "preis_pro_45": self.preis_pro_45,
             "role": self.role.serialize(),
@@ -65,6 +66,24 @@ class Tutoring(models.Model):
     def __str__(self):
         return f"[{self.id}] ({self.date}) {self.student} by {self.teacher} [{self.subject}]"
 
+    # Ensure only teacher, student user being teacher, student prop
+    def clean(self):
+        if self.teacher and self.teacher.role.title != "Teacher":
+            raise ValidationError(
+                "Only users with the role 'Teacher' can be assigned as teachers for tutoring sessions."
+            )
+
+        if self.student and self.student.role.title != "Student":
+            raise ValidationError(
+                "Only users with the role 'Student' can be assigned as students for tutoring sessions."
+            )
+
+    # Checks if valid
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    # for JSON serialization
     def serialize(self):
         return {
             "id": self.id,

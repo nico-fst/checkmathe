@@ -9,9 +9,24 @@ from django.urls import reverse
 from django import forms
 from django.views.decorators.csrf import csrf_exempt
 from django.core.validators import MinValueValidator
+from functools import wraps
 import json
 
 from .models import Role, User, Subject, Tutoring
+
+
+def teacher_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:  # check if logged in
+            return JsonResponse({"error": "Authentication required."}, status=401)
+        if request.user.role.title != "Teacher":  # check if teacher
+            return JsonResponse({"error": "Permission denied. This action requires the role 'Teacher'."}, status=403)
+        
+        # then call original func
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view
 
 
 def index(request):
@@ -183,6 +198,7 @@ def new_tut(request):
 
 @csrf_exempt
 @login_required
+@teacher_required
 def delete_tut(request, tut_id):
     try:
         tut = Tutoring.objects.get(id=tut_id)

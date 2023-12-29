@@ -49,6 +49,10 @@
             </ul>
         </div>
     </nav>
+
+    {% if message %}
+    <div>{{ message }}</div>
+    {% endif %}
     
     <div class="body" style="margin: 25px;">
         {% block body %}
