@@ -4,8 +4,14 @@
 {% block body %}
 
 <h1>Ausgewähltes Tutoring</h1>
+<span id="tut_id" data-tut_id="{{tut.id}}"></span>
+
 <ul>
-    <li>Date: <span id="tut_date">{{tut.date}}</span> <button data-tut_id="{{tut.id}}" id="edit-date">Edit</button></li>
+    <li>
+        Date: <span id="tut_date">{{tut.date}}</span>
+        <button class="Edit" id="edit-date">Edit</button>
+        <!-- <input type="text" id="new_date", name="new_date" placeholder="YYYY-MM-DD"> -->
+    </li>
     <li>Duration: {{tut.duration}} <button data-tut_id="{{tut.id}}" id="edit-duration">Edit</button></li></li>
     <li>Subject: {{tut.subject}}</li>
     <li>Teacher: {{tut.teacher.first_name}} {{tut.teacher.last_name}}</li>
