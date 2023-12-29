@@ -38,7 +38,7 @@ class User(AbstractUser):
             "user_id": self.id,
             "phone_number": self.phone_number,
             "preis_pro_45": self.preis_pro_45,
-            "role": self.role.serialize()
+            "role": self.role.serialize(),
         }
 
 
@@ -47,7 +47,7 @@ class Subject(models.Model):
 
     def __str__(self):
         return self.title
-    
+
     def serialize(self):
         return {"title": self.title}
 
@@ -58,12 +58,8 @@ class Tutoring(models.Model):
         validators=[MinValueValidator(1)], help_text="Duration must be greater than 0."
     )
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
-    teacher = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="teaching_tutorings"
-    )
-    student = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="learning_tutorings"
-    )
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="teaching_tutorings")
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="learning_tutorings")
     content = models.TextField()
 
     def __str__(self):
@@ -71,10 +67,11 @@ class Tutoring(models.Model):
 
     def serialize(self):
         return {
+            "id": self.id,
             "date": self.date,
             "duration": self.duration,
             "subject": self.subject.serialize(),
             "teacher": self.teacher.serialize(),
             "student": self.student.serialize(),
-            "content": self.content
+            "content": self.content,
         }

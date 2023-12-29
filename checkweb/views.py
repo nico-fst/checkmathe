@@ -96,6 +96,7 @@ class TutForm(forms.Form):
 
 
 @csrf_exempt
+@login_required
 def tutoring(request, tut_id):
     if request.method == "POST":
         form = TutForm(request.POST)
@@ -132,6 +133,8 @@ def tutoring(request, tut_id):
             return HttpResponse(f"Illegal value: {e}", status=400)
 
 
+@csrf_exempt
+@login_required
 def tutoring_view(request, tut_id):
     try:
         tut = Tutoring.objects.get(id=tut_id)
@@ -141,6 +144,8 @@ def tutoring_view(request, tut_id):
     return render(request, "checkweb/tutoring.html", {"tut": tut})
 
 
+@csrf_exempt
+@login_required
 def tutorings(request, user_id):
     tuts_given = Tutoring.objects.filter(teacher=user_id)
     serialized_tuts_given = [t.serialize() for t in tuts_given]
@@ -154,6 +159,7 @@ def tutorings(request, user_id):
     )
 
 
+@csrf_exempt
 @login_required
 def history_view(request):
     tuts_given = Tutoring.objects.filter(teacher=request.user)
@@ -165,10 +171,22 @@ def history_view(request):
     return render(
         request,
         "checkweb/history.html",
-        {"tuts_given": serialized_tuts_given, "tuts_taken": serialized_tuts_taken},
+        {"tuts_given": tuts_given, "tuts_taken": tuts_taken},
     )
 
 
+@csrf_exempt
 @login_required
 def new_tut(request):
     return render(request, "checkweb/new_tut.html", {"form": TutForm()})
+
+
+@csrf_exempt
+@login_required
+def delete_tut(request, tut_id):
+    try:
+        tut = Tutoring.objects.get(id=tut_id)
+        tut.delete()
+        return render(request, "checkweb/index.html", {"message": "Success deleting the Tutoring."})
+    except Tutoring.DoesNotExist:
+        return JsonResponse({"error": f"Tutoring with ID {tut_id} does not exist."}, status=404)

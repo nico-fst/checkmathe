@@ -5,7 +5,7 @@
 
 <h1>History of Tutorings</h1>
 
-{%if tuts_given %}
+{% if tuts_given %}
 <h2>Tutorings Given</h2>
 <table>
     <tr>
@@ -21,13 +21,13 @@
         <td>{{tut.student.username}}</td>
         <td>{{tut.subject.title}}</td>
         <td>{{tut.duration}}</td>
-        <td>{{tut.content}}</td>
+        <td><a href="{% url 'tutoring_view' tut.id %}">{{tut.content}}</a></td>
     </tr>
     {% endfor %}
 </table>
 {% endif %}
 
-{%if tuts_taken %}
+{% if tuts_taken %}
 <h2>Tutorings Taken</h2>
 <table>
     <tr>
@@ -43,7 +43,7 @@
         <td>{{tut.teacher.username}}</td>
         <td>{{tut.subject.title}}</td>
         <td>{{tut.duration}}</td>
-        <td>{{tut.content}}</td>
+        <td><a href="{% url 'tutoring_view' tut.id %}">{{tut.content}}</a></td>
     </tr>
     {% endfor %}
 </table>
