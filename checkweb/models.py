@@ -1,12 +1,26 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator
 
 
 class Role(models.Model):
-    title = models.CharField(max_length=10)
+    TITLE_CHOICES = [
+        ("Student", "Student"),
+        ("Teacher", "Teacher"),
+        ("Admin", "Admin"),
+    ]
+    title = models.CharField(max_length=10, choices=TITLE_CHOICES)
 
     def __str__(self):
         return self.title
+
+    # Ensure title being in TITLE_CHOICES
+    def save(self, *args, **kwargs):
+        if self.title not in [choice[0] for choice in self.TITLE_CHOICES]:
+            raise ValueError(
+                f"Invalid role title: {self.title}. It must be 'Student', 'Teacher', or 'Admin'."
+            )
+        super().save(*args, **kwargs)
 
 
 class User(AbstractUser):
@@ -24,10 +38,16 @@ class Subject(models.Model):
 
 class Tutoring(models.Model):
     date = models.DateField()
-    duration = models.IntegerField()
+    duration = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)], help_text="Duration must be greater than 0."
+    )
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
-    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="teaching_tutorings")
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="learning_tutorings")
+    teacher = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="teaching_tutorings"
+    )
+    student = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="learning_tutorings"
+    )
     content = models.TextField()
 
     def __str__(self):
