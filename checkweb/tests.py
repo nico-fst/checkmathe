@@ -1,9 +1,10 @@
-from django.test import TestCase
+from django.test import TestCase, Client
+from django.contrib.auth.models import User
 from django.utils import timezone
 from .models import Role, User, Subject, Tutoring
 
 
-class DB_Consistency(TestCase):
+class DB_ConsistencyTestCase(TestCase):
     def setUp(self):
         self.role = Role.objects.create(title="Student")
         now = timezone.now().date()
@@ -38,3 +39,40 @@ class DB_Consistency(TestCase):
         self.assertEqual(self.tut.duration, 45)
         self.assertEqual(self.tut.subject.title, "Math")
         self.assertEqual(self.tut.teacher.username, "Xavier")
+
+
+class TutoringViewsTestCase(TestCase):
+    def setUp(self):
+        self.teacher = User.objects.create_user(username="demo_teacher", password="password")
+        self.teacher.role = Role.objects.create(title="Teacher")
+        self.teacher.save()
+
+        self.student = User.objects.create_user(username="demo_student", password="password")
+        self.student.role = Role.objects.create(title="Student")
+        self.student.save()
+
+        self.tut = Tutoring.objects.create(
+            date="2023-01-01",
+            duration=45,
+            subject=Subject.objects.create(title="TestSubject"),
+            student=self.student,
+            teacher=self.teacher,
+            content="Ananas dies das.",
+        )
+        self.tut.save()
+
+    def test_delete_illegal(self):
+        client = Client()
+        client.force_login(self.student)
+        response = client.post(f"/delete_tut/{self.tut.id}/")
+
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(Tutoring.objects.filter(id=self.tut.id).exists())  # validate that not deleted
+
+    def test_delete_legal(self):
+        client = Client()
+        client.force_login(self.teacher)
+        response = client.post(f"/delete_tut/{self.tut.id}/")
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Tutoring.objects.filter(id=self.tut.id).exists())  # validate deletion

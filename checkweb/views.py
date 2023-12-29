@@ -3,7 +3,7 @@ from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django import forms
@@ -22,7 +22,7 @@ def teacher_required(view_func):
             return JsonResponse({"error": "Authentication required."}, status=401)
         if request.user.role.title != "Teacher":  # check if teacher
             return JsonResponse({"error": "Permission denied. This action requires the role 'Teacher'."}, status=403)
-        
+
         # then call original func
         return view_func(request, *args, **kwargs)
 
@@ -202,7 +202,11 @@ def new_tut(request):
 def delete_tut(request, tut_id):
     try:
         tut = Tutoring.objects.get(id=tut_id)
+
+        if request.user != tut.teacher:
+            return HttpResponseForbidden("Permission denied")
+
         tut.delete()
         return render(request, "checkweb/index.html", {"message": "Success deleting the Tutoring."})
     except Tutoring.DoesNotExist:
-        return JsonResponse({"error": f"Tutoring with ID {tut_id} does not exist."}, status=404)
+        return HttpResponseNotFound(f"Tutoring with ID {tut_id} does not exist.")
