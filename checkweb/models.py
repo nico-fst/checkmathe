@@ -33,6 +33,16 @@ class User(AbstractUser):
     def __str__(self):
         return f"[{self.id}] {self.username}"
 
+    def save(self, *args, **kwargs):
+        # Set default role to "Student" if not specified
+        if not self.role:
+            student_role, created = Role.objects.get_or_create(title="Student")
+            self.role = student_role
+        # check if mandatory fields provided
+        if not self.username or not self.first_name or not self.last_name or not self.email:
+            raise ValidationError("Username, first name, last name, and email are required fields.")
+        super().save(*args, **kwargs)
+
     def serialize(self):
         return {
             "username": self.username,
