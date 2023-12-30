@@ -18,7 +18,7 @@ class Role(models.Model):
     # Ensure title being in TITLE_CHOICES
     def save(self, *args, **kwargs):
         if self.title not in [choice[0] for choice in self.TITLE_CHOICES]:
-            raise ValueError(f"Invalid role title: {self.title}. It must be 'Student', 'Teacher', or 'Admin'.")
+            raise ValueError(f"Invalid role title: {self.title}. It must be 'Student', 'Teacher', or 'Developer'.")
         super().save(*args, **kwargs)
 
     def serialize(self):
@@ -26,17 +26,30 @@ class Role(models.Model):
 
 
 class User(AbstractUser):
+    first_name = models.CharField(max_length=30, blank=False)
+    last_name = models.CharField(max_length=30, blank=False)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    email = models.CharField(max_length=32, unique=True)
+    email = models.CharField(max_length=32, unique=True, blank=False)
     preis_pro_45 = models.FloatField(null=True, blank=True)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
 
-    username = None
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['role']
-
     def __str__(self):
-        return f"[{self.id}] {self.email}"
+        return f"[{self.id}] {self.username}"
+
+    def clean(self):
+        if not self.first_name or not self.last_name:
+            raise ValidationError("First and Last name must be specified.")
+        if not self.email:
+            raise ValidationError("Email must be specified.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+
+        # Set default role to "Teacher" if no role is provided
+        if not self.role_id:
+            self.role, created = Role.objects.get_or_create(title="Student")
+
+        super().save(*args, **kwargs)
 
     def serialize(self):
         return {

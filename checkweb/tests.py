@@ -4,33 +4,77 @@ from django.utils import timezone
 from .models import Role, User, Subject, Tutoring
 import datetime
 from django.urls import reverse
+from django.db.utils import IntegrityError
+from django.core.exceptions import ValidationError
 
 
 class DB_ConsistencyTestCase(TestCase):
     def setUp(self):
-        self.role = Role.objects.create(title="Student")
+        self.stud, created = Role.objects.get_or_create(title="Student")
+        self.teach, created = Role.objects.get_or_create(title="Teacher")
         now = timezone.now().date()
+
         self.tut = Tutoring.objects.create(
             date=now,
             duration=45,
             subject=Subject.objects.create(title="Math"),
             student=User.objects.create(
-                username="Thore",
+                username="Thore.st",
+                first_name="Thore",
+                last_name="St",
+                email="thore@mail.de",
                 phone_number="+49176999",
                 preis_pro_45=20,
-                role=Role.objects.create(title="Student"),
+                role=self.stud,
             ),
             teacher=User.objects.create(
-                username="Xavier",
+                username="Xavier.nai",
+                first_name="Xavier",
+                last_name="Naidoo",
+                email="xavier@mail.de",
                 phone_number="0176543999",
-                role=Role.objects.create(title="Teacher"),
+                role=self.teach,
             ),
             content="labore culpa reprehenderit sit officia elit voluptate sit ad sit",
         )
 
     def test_creation(self):
-        self.assertEqual(self.role.title, "Student")
-        self.assertEqual(str(self.role), "Student")
+        self.assertEqual(self.stud.title, "Student")
+        self.assertEqual(str(self.stud), "Student")
+
+    def test_incomplete_creation(self):
+        with self.assertRaises(ValidationError):
+            teach_empty = User.objects.create()
+        with self.assertRaises(ValidationError):
+            teach_without_email = User.objects.create(
+                username="Xavier.nai",
+                first_name="Xavier",
+                last_name="Naidoo",
+            )
+        with self.assertRaises(ValidationError):
+            teach_without_first = User.objects.create(
+                username="Xavier.nai", last_name="Naidoo", email="xavier.nai@mail.de"
+            )
+
+    def test_default_role_being_student(self):
+        teach_without_specified_role = User.objects.create(
+            username="user", first_name="userf", last_name="userl", email="userf@mail.de", password="pass"
+        )
+
+        self.assertEqual(teach_without_specified_role.role.title, "Student")
+
+    def test_email_unique(self):
+        with self.assertRaises(IntegrityError):
+            duplicate_teacher = (
+                User.objects.create(
+                    username="Xavier.nai",
+                    first_name="Xavier",
+                    last_name="Naidoo",
+                    email="xavier@mail.de",
+                    phone_number="0176543999",
+                    role=self.teach,
+                ),
+            )
 
     def test_choices(self):
         with self.assertRaises(ValueError):
@@ -40,17 +84,25 @@ class DB_ConsistencyTestCase(TestCase):
         self.assertEqual(self.tut.date, timezone.now().date())
         self.assertEqual(self.tut.duration, 45)
         self.assertEqual(self.tut.subject.title, "Math")
-        self.assertEqual(self.tut.teacher.username, "Xavier")
+        self.assertEqual(self.tut.teacher.username, "Xavier.nai")
 
 
 class TutoringViewsTestCase(TestCase):
     def setUp(self):
-        self.teacher = User.objects.create_user(username="demo_teacher", password="password")
-        self.teacher.role = Role.objects.create(title="Teacher")
+        teach, created = Role.objects.get_or_create(title="Teacher")
+        teach.save()
+        stud, created = Role.objects.get_or_create(title="Student")
+        stud.save()
+        self.teacher = User.objects.create(
+            username="demo_teacher", first_name="demo", last_name="teacher", email="demo@mail.de", password="password"
+        )
+        self.teacher.role = teach
         self.teacher.save()
 
-        self.student = User.objects.create_user(username="demo_student", password="password")
-        self.student.role = Role.objects.create(title="Student")
+        self.student = User.objects.create(
+            username="demo_student", first_name="demo", last_name="student", email="demo2@mail.de", password="password"
+        )
+        self.student.role = stud
         self.student.save()
 
         self.subject = Subject.objects.create(title="Astrologie")

@@ -63,20 +63,12 @@ def logout_view(request):
 
 
 # New Students
+@csrf_exempt
 def register(request):
     if request.method == "POST":
-        email = request.POST["email"]
+        username = request.POST["username"]
         email = request.POST["email"]
         ptc = request.POST["personal_teacher_code"]
-
-        # Only register as teacher, if a valid PTC was provided
-        if ptc == "Amaru":  # TODO as private environment var
-            role = Role.objects.get(title="Teacher")
-        elif ptc:
-            return render(request, "checkweb/register.html", {"message": "Wrong PTC given..."})
-        else:
-            # role = Role.objects.get(title="Student")
-            return render(request, "checkweb/register.html", {"message": ptc})
 
         # Ensure password matches confirmation
         password = request.POST["password"]
@@ -86,7 +78,8 @@ def register(request):
 
         # Attempt to create new user
         try:
-            user = User.objects.create_user(email, email, password, role=role)
+            user = User.objects.create_user(username, email, password)
+            user.role = Role.objects.get(title="Student")
             user.save()
         except IntegrityError:
             return render(
@@ -94,6 +87,14 @@ def register(request):
                 "checkweb/register.html",
                 {"message": "email already taken."},
             )
+
+        # Student is default role
+        # Only register as teacher, if a valid PTC was provided
+        if ptc == "Amaru":  # TODO as private environment var
+            role = Role.objects.get(title="Teacher")
+        elif ptc:
+            return render(request, "checkweb/register.html", {"message": "Wrong PTC given..."})
+
         login(request, user)
         return render(request, "checkweb/index.html", {"message": "Registered successfull"})
     else:
