@@ -1,0 +1,38 @@
+# .gitignore for Django-Project
+
+# Python-Dateien
+*.pyc
+*.pyo
+__pycache__/
+
+# Virtuelle Umgebungen
+venv/
+env/
+*.env
+
+# Medien-Uploads
+media/
+
+# Datenbankdateien
+# db.sqlite3
+
+# IDE-Dateien
+.vscode/
+.idea/
+
+# Lokale Konfigurationsdateien
+*.env
+
+# Log-Dateien
+*.log
+
+# Kompilierte Python-Dateien
+*.pyc
+
+# macOS-spezifische Dateien
+.DS_Store
+
+# Konfigurationsdateien für verschiedene Editoren/IDEs
+*.sublime-workspace
+*.sublime-project
+*.vscode/

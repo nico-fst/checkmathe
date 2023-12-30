@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
 
 
 class Role(models.Model):
@@ -32,13 +33,23 @@ class User(AbstractUser):
     def __str__(self):
         return f"[{self.id}] {self.username}"
 
+    def save(self, *args, **kwargs):
+        # Set default role to "Student" if not specified
+        if not self.role:
+            student_role, created = Role.objects.get_or_create(title="Student")
+            self.role = student_role
+        # check if mandatory fields provided
+        if not self.username or not self.first_name or not self.last_name or not self.email:
+            raise ValidationError("Username, first name, last name, and email are required fields.")
+        super().save(*args, **kwargs)
+
     def serialize(self):
         return {
             "username": self.username,
-            "user_id": self.id,
+            "id": self.id,
             "phone_number": self.phone_number,
             "preis_pro_45": self.preis_pro_45,
-            "role": self.role.serialize()
+            "role": self.role.serialize(),
         }
 
 
@@ -47,7 +58,7 @@ class Subject(models.Model):
 
     def __str__(self):
         return self.title
-    
+
     def serialize(self):
         return {"title": self.title}
 
@@ -58,23 +69,38 @@ class Tutoring(models.Model):
         validators=[MinValueValidator(1)], help_text="Duration must be greater than 0."
     )
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
-    teacher = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, related_name="teaching_tutorings"
-    )
-    student = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="learning_tutorings"
-    )
+    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="teaching_tutorings")
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="learning_tutorings")
     content = models.TextField()
 
     def __str__(self):
         return f"[{self.id}] ({self.date}) {self.student} by {self.teacher} [{self.subject}]"
 
+    # Ensure only teacher, student user being teacher, student prop
+    def clean(self):
+        if self.teacher and self.teacher.role.title != "Teacher":
+            raise ValidationError(
+                "Only users with the role 'Teacher' can be assigned as teachers for tutoring sessions."
+            )
+
+        if self.student and self.student.role.title != "Student":
+            raise ValidationError(
+                "Only users with the role 'Student' can be assigned as students for tutoring sessions."
+            )
+
+    # Checks if valid
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    # for JSON serialization
     def serialize(self):
         return {
+            "id": self.id,
             "date": self.date,
             "duration": self.duration,
             "subject": self.subject.serialize(),
             "teacher": self.teacher.serialize(),
             "student": self.student.serialize(),
-            "content": self.content
+            "content": self.content,
         }
