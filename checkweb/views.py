@@ -66,17 +66,18 @@ def logout_view(request):
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
+        first_name = request.POST["first_name"]
+        last_name = request.POST["last_name"]
         email = request.POST["email"]
+        phone_number = request.POST["phone_number"]
         ptc = request.POST["personal_teacher_code"]
+        role, created = Role.objects.get_or_create(title="Student")  # default: only overwritten if valid PTC
 
         # Only register as teacher, if a valid PTC was provided
         if ptc == "Amaru":  # TODO as private environment var
-            role = Role.objects.get(title="Teacher")
+            role, created = Role.objects.get_or_create(title="Teacher")
         elif ptc:
             return render(request, "checkweb/register.html", {"message": "Wrong PTC given..."})
-        else:
-            # role = Role.objects.get(title="Student")
-            return render(request, "checkweb/register.html", {"message": ptc})
 
         # Ensure password matches confirmation
         password = request.POST["password"]
@@ -86,7 +87,20 @@ def register(request):
 
         # Attempt to create new user
         try:
-            user = User.objects.create_user(username, email, password, role=role)
+            if phone_number is None:
+                user = User.objects.create_user(
+                    username, email, password, first_name=first_name, last_name=last_name, role=role
+                )
+            else:
+                user = User.objects.create_user(
+                    username,
+                    email,
+                    password,
+                    first_name=first_name,
+                    last_name=last_name,
+                    role=role,
+                    phone_number=phone_number,
+                )
             user.save()
         except IntegrityError:
             return render(
