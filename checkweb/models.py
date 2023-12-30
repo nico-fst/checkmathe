@@ -27,11 +27,16 @@ class Role(models.Model):
 
 class User(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    email = models.CharField(max_length=32, unique=True)
     preis_pro_45 = models.FloatField(null=True, blank=True)
-    role = models.ForeignKey(Role, on_delete=models.SET_NULL, blank=True, null=True)
+    role = models.ForeignKey(Role, on_delete=models.CASCADE)
+
+    username = None
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['role']
 
     def __str__(self):
-        return f"[{self.id}] {self.username}"
+        return f"[{self.id}] {self.email}"
 
     def serialize(self):
         return {

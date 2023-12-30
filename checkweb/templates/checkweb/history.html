@@ -20,8 +20,8 @@
         {% for tut in data.tutorings %}
         <tr>
             <td>{{tut.date}}</td>
-            <td>{{tut.student.username}}</td>
-            <td>{{tut.teacher.username}}</td>
+            <td>{{tut.student.first_name}} {{tut.student.last_name}}</td>
+            <td>{{tut.teacher.first_name}} {{tut.teacher.last_name}}</td>
             <td>{{tut.subject.title}}</td>
             <td>{{tut.duration}}</td>
             <td><a href="{% url 'tutoring_view' tut.id %}">{{tut.content}}</a></td>

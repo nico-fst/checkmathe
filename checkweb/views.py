@@ -39,9 +39,9 @@ def index(request):
 def login_view(request):
     if request.method == "POST":
         # Attempt to sign user in
-        username = request.POST["username"]
+        email = request.POST["email"]
         password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, email=email, password=password)
 
         # Check if authentication successful
         if user is not None:
@@ -51,7 +51,7 @@ def login_view(request):
             return render(
                 request,
                 "checkweb/login.html",
-                {"message": "Invalid username and/or password."},
+                {"message": "Invalid email and/or password."},
             )
     else:
         return render(request, "checkweb/login.html")
@@ -65,7 +65,7 @@ def logout_view(request):
 # New Students
 def register(request):
     if request.method == "POST":
-        username = request.POST["username"]
+        email = request.POST["email"]
         email = request.POST["email"]
         ptc = request.POST["personal_teacher_code"]
 
@@ -86,13 +86,13 @@ def register(request):
 
         # Attempt to create new user
         try:
-            user = User.objects.create_user(username, email, password, role=role)
+            user = User.objects.create_user(email, email, password, role=role)
             user.save()
         except IntegrityError:
             return render(
                 request,
                 "checkweb/register.html",
-                {"message": "Username already taken."},
+                {"message": "email already taken."},
             )
         login(request, user)
         return render(request, "checkweb/index.html", {"message": "Registered successfull"})
