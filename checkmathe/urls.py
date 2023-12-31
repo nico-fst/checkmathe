@@ -17,8 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from checkweb import views
+from api import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("checkweb.urls")),  # statt immer checkweb/ für App einzugeben
+    path("api/", include("api.urls"))
 ]
