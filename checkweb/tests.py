@@ -142,13 +142,13 @@ class AuthenticationTestCase(TestCase):
         )
 
         # Test login with valid credentials
-        response = client.post(reverse("login"), {"username": "testuser", "password": "testpassword"})
+        response = client.post(reverse("login_view"), {"username": "testuser", "password": "testpassword"})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Login successful")
 
         # Test login with invalid credentials
-        response = client.post(reverse("login"), {"username": "testuser", "password": "wrongpassword"})
+        response = client.post(reverse("login_view"), {"username": "testuser", "password": "wrongpassword"})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Invalid username and/or password.")
@@ -183,6 +183,13 @@ class TutoringViewsTestCase(TestCase):
             content="Ananas dies das.",
         )
         self.tut.save()
+
+
+    # def test_view_illegal(self):
+    #     client = Client()
+    #     client.force_login(self.student)
+
+    #     response = client.get(reverse)
 
 
     def test_create_legal(self):
