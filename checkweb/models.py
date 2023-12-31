@@ -16,11 +16,11 @@ class User(AbstractUser):
         if not self.username or not self.first_name or not self.last_name or not self.email:
             raise ValidationError("Username, first name, last name, and email are required fields.")
 
-        # Student as default group
-        if not self.groups.exists():
-            self.groups.add(Group.objects.get(name="Student"))
-
         super().save(*args, **kwargs)
+
+        # Student as default group
+        if self.id and not self.groups.exists():
+            self.groups.add(Group.objects.get(name="Student"))
 
     def serialize(self):
         return {

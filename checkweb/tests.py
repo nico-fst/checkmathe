@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.utils import timezone
-from .models import Role, User, Subject, Tutoring
+from .models import User, Subject, Tutoring
 import datetime
 from django.urls import reverse
 from django.db.utils import IntegrityError
@@ -10,37 +10,39 @@ from django.core.exceptions import ValidationError
 
 class DB_ConsistencyTestCase(TestCase):
     def setUp(self):
-        self.stud, created = Role.objects.get_or_create(title="Student")
-        self.teach, created = Role.objects.get_or_create(title="Teacher")
+        self.stud = Group.objects.get(name="Student")
+        self.teach = Group.objects.get(name="Teacher")
+
         now = timezone.now().date()
+
+        self.thore = User.objects.create_user(
+            "Thore.st",
+            "thore@mail.de",
+            "password",
+            first_name="Thore",
+            last_name="St",
+            phone_number="+49176999",
+            preis_pro_45=20,
+        )
+        self.thore.groups.set([self.stud])
+
+        self.xavier = User.objects.create(
+            username="Xavier.nai",
+            first_name="Xavier",
+            last_name="Naidoo",
+            email="xavier@mail.de",
+            phone_number="0176543999",
+        )
+        self.xavier.groups.set([self.teach])
 
         self.tut = Tutoring.objects.create(
             date=now,
             duration=45,
             subject=Subject.objects.create(title="Math"),
-            student=User.objects.create(
-                username="Thore.st",
-                first_name="Thore",
-                last_name="St",
-                email="thore@mail.de",
-                phone_number="+49176999",
-                preis_pro_45=20,
-                role=self.stud,
-            ),
-            teacher=User.objects.create(
-                username="Xavier.nai",
-                first_name="Xavier",
-                last_name="Naidoo",
-                email="xavier@mail.de",
-                phone_number="0176543999",
-                role=self.teach,
-            ),
+            student=self.thore,
+            teacher=self.xavier,
             content="labore culpa reprehenderit sit officia elit voluptate sit ad sit",
         )
-
-    def test_creation(self):
-        self.assertEqual(self.stud.title, "Student")
-        self.assertEqual(str(self.stud), "Student")
 
     def test_incomplete_creation(self):
         with self.assertRaises(ValidationError):
@@ -56,29 +58,24 @@ class DB_ConsistencyTestCase(TestCase):
                 username="Xavier.nai", last_name="Naidoo", email="xavier.nai@mail.de"
             )
 
-    def test_default_role_being_student(self):
-        teach_without_specified_role = User.objects.create(
+    def test_default_gropu_being_student(self):
+        self.teach_without_specified_group = User.objects.create(
             username="user", first_name="userf", last_name="userl", email="userf@mail.de", password="pass"
         )
 
-        self.assertEqual(teach_without_specified_role.role.title, "Student")
+        self.assertEqual(self.teach_without_specified_group.groups.first().name, "Student")
 
     def test_email_unique(self):
         with self.assertRaises(IntegrityError):
-            duplicate_teacher = (
+            duplicate_user = (
                 User.objects.create(
                     username="Xavier.nai",
                     first_name="Xavier",
                     last_name="Naidoo",
                     email="xavier@mail.de",
                     phone_number="0176543999",
-                    role=self.teach,
                 ),
             )
-
-    def test_choices(self):
-        with self.assertRaises(ValueError):
-            invalid_role = Role.objects.create(title="other")
 
     def test_complex(self):
         self.assertEqual(self.tut.date, timezone.now().date())
@@ -89,8 +86,8 @@ class DB_ConsistencyTestCase(TestCase):
 
 class AuthenticationTestCase(TestCase):
     def setUp(self):
-        self.stud, created = Role.objects.get_or_create(title="Student")
-        self.teach, created = Role.objects.get_or_create(title="Teacher")
+        self.stud = Group.objects.get(name="Student")
+        self.teach = Group.objects.get(name="Teacher")
 
     def test_register_view(self):
         client = Client()
@@ -136,14 +133,13 @@ class AuthenticationTestCase(TestCase):
 
         # Create a test user
         user = User.objects.create_user(
-                username="testuser",
-                password="testpassword",
-                first_name="Xavier",
-                last_name="Naidoo",
-                email="xavier@mail.de",
-                phone_number="0176543999",
-                role=self.teach
-            )
+            username="testuser",
+            password="testpassword",
+            first_name="Xavier",
+            last_name="Naidoo",
+            email="xavier@mail.de",
+            phone_number="0176543999",
+        )
 
         # Test login with valid credentials
         response = client.post(reverse("login"), {"username": "testuser", "password": "testpassword"})
@@ -160,20 +156,19 @@ class AuthenticationTestCase(TestCase):
 
 class TutoringViewsTestCase(TestCase):
     def setUp(self):
-        teach, created = Role.objects.get_or_create(title="Teacher")
-        teach.save()
-        stud, created = Role.objects.get_or_create(title="Student")
-        stud.save()
-        self.teacher = User.objects.create(
-            username="demo_teacher", first_name="demo", last_name="teacher", email="demo@mail.de", password="password"
+        self.stud = Group.objects.get(name="Student")
+        self.teach = Group.objects.get(name="Teacher")
+
+        self.teacher = User.objects.create_user(
+            "demo_teacher", "demo@mail.de", "password", first_name="demo", last_name="teacher"
         )
-        self.teacher.role = teach
+        self.teacher.groups.set([self.teach])
         self.teacher.save()
 
         self.student = User.objects.create(
             username="demo_student", first_name="demo", last_name="student", email="demo2@mail.de", password="password"
         )
-        self.student.role = stud
+        self.student.groups.set([self.stud])
         self.student.save()
 
         self.subject = Subject.objects.create(title="Astrologie")
@@ -188,6 +183,7 @@ class TutoringViewsTestCase(TestCase):
             content="Ananas dies das.",
         )
         self.tut.save()
+
 
     def test_create_legal(self):
         client = Client()
