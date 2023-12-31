@@ -12,10 +12,11 @@ from django.core.validators import MinValueValidator
 from functools import wraps
 from django.db import models
 from django.db.models.functions import TruncMonth
+from django.contrib.auth.models import Group
 from django.db.models import Count
 import json
 
-from .models import Role, User, Subject, Tutoring
+from .models import User, Subject, Tutoring
 
 
 def teacher_required(view_func):
@@ -23,8 +24,8 @@ def teacher_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:  # check if logged in
             return JsonResponse({"error": "Authentication required."}, status=401)
-        if request.user.role.title != "Teacher":  # check if teacher
-            return JsonResponse({"error": "Permission denied. This action requires the role 'Teacher'."}, status=403)
+        if request.user.groups.first().name != "Teacher":  # check if teacher
+            return JsonResponse({"error": "Permission denied. This action requires the Group 'Teacher'."}, status=403)
 
         # then call original func
         return view_func(request, *args, **kwargs)
@@ -71,11 +72,11 @@ def register(request):
         email = request.POST["email"]
         phone_number = request.POST["phone_number"]
         ptc = request.POST["personal_teacher_code"]
-        role, created = Role.objects.get_or_create(title="Student")  # default: only overwritten if valid PTC
+        group = Group.objects.get(name="Student")  # default: only overwritten if valid PTC
 
         # Only register as teacher, if a valid PTC was provided
         if ptc == "Amaru":  # TODO as private environment var
-            role, created = Role.objects.get_or_create(title="Teacher")
+            group = Group.objects.get(name="Teacher")
         elif ptc:
             return render(request, "checkweb/register.html", {"message": "Wrong PTC given..."})
 
@@ -88,9 +89,7 @@ def register(request):
         # Attempt to create new user
         try:
             if phone_number is None:
-                user = User.objects.create_user(
-                    username, email, password, first_name=first_name, last_name=last_name, role=role
-                )
+                user = User.objects.create_user(username, email, password, first_name=first_name, last_name=last_name)
             else:
                 user = User.objects.create_user(
                     username,
@@ -98,15 +97,15 @@ def register(request):
                     password,
                     first_name=first_name,
                     last_name=last_name,
-                    role=role,
                     phone_number=phone_number,
                 )
+            user.groups.set([group])
             user.save()
         except IntegrityError:
             return render(
                 request,
                 "checkweb/register.html",
-                {"message": "Username already taken."},
+                {"message": "Username or Email already taken."},
             )
         login(request, user)
         return render(request, "checkweb/index.html", {"message": "Registered successfull"})
@@ -122,8 +121,8 @@ class TutForm(forms.Form):
         widget=forms.NumberInput(attrs={"min": 0}),
     )
     subject = forms.ModelChoiceField(queryset=Subject.objects.all(), label="Subject")
-    teacher = forms.ModelChoiceField(queryset=User.objects.filter(role__title="Teacher"), label="Teacher")
-    student = forms.ModelChoiceField(queryset=User.objects.filter(role__title="Student"), label="Student")
+    teacher = forms.ModelChoiceField(queryset=User.objects.filter(groups__name="Teacher"), label="Teacher")
+    student = forms.ModelChoiceField(queryset=User.objects.filter(groups__name="Student"), label="Student")
     content = forms.CharField(label="Content", widget=forms.Textarea(attrs={"rows": 4, "cols": 50}))
 
 
@@ -210,7 +209,7 @@ def group_tutorings_by_month(request, student_id):
         month = entry["month"]
         # collect relevant Tutorings in current month
 
-        if request.user.role.title == "Teacher":  # filter tutorings given as teacher
+        if request.user.groups.first().name == "Teacher":  # filter tutorings given as teacher
             if student_id is not None:  # filter for current month, year, teacher INCLUDING student
                 filter_student = User.objects.get(id=student_id)
                 tutorings_for_month = Tutoring.objects.filter(

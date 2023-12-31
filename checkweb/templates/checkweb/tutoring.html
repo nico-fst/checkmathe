@@ -11,19 +11,19 @@
 <ul>
     <li>
         Date: <span id="tut_date">{{tut.date}}</span>
-        {% if user.role.title == "Teacher" %}
+        {% if user.groups.first.name == "Teacher" %}
             <button class="Edit" id="edit-date">Edit</button>
         {% endif %}
     </li>
     <li>
         Duration: <span id="tut_duration">{{tut.duration}}</span>
-        {% if user.role.title == "Teacher" %}
+        {% if user.groups.first.name == "Teacher" %}
             <button class="Edit" id="edit-duration">Edit</button>
         {% endif %}
     </li>
     <li>
         Content: <span id="tut_content">{{tut.content}}</span>
-        {% if user.role.title == "Teacher" %}
+        {% if user.groups.first.name == "Teacher" %}
             <button class="Edit" id="edit-content">Edit</button>
         {% endif %}
     </li>
@@ -32,7 +32,7 @@
     <li>Student: {{tut.student.username}}</li>
 </ul>
 
-{% if user.role.title == "Teacher" %}
+{% if user.groups.first.name == "Teacher" %}
     <button class="Delete" id="delete-btn" onclick="">Delete</button>
 {% endif %}
 
