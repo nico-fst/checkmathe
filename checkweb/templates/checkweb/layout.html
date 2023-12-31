@@ -26,7 +26,7 @@
                     <a class="nav-link" href="{% url 'history_view' %}">History</a>
                 </li>
 
-                {% if user.role.title == "Teacher" %}
+                {% if user.groups.first.name == "Teacher" %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'new_tut' %}">New Tutoring</a>
                     </li>

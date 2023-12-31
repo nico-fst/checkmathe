@@ -1,19 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('#edit-date').addEventListener('click', (event) => {
-    editOrSave(event.target, 'date')
+    editOrSave(event.target, 'date');
   })
 
   document.querySelector('#edit-duration').addEventListener('click', (event) => {
-    editOrSave(event.target, 'duration')
+    editOrSave(event.target, 'duration');
   })
 
   document.querySelector('#edit-content').addEventListener('click', (event) => {
-    editOrSave(event.target, 'content')
+    editOrSave(event.target, 'content');
   })
 
   document.querySelector('#delete-btn').addEventListener('click', (event) => {
-    const tutID = document.querySelector('#tut_id').getAttribute('data-tut_id')
-    deleteTutoring(tutID)
+    const tutID = document.querySelector('#tut_id').getAttribute('data-tut_id');
+    deleteTutoring(tutID);
   })
 })
 
@@ -100,5 +100,21 @@ function saveTut(tutID, newDict) {
       return updatePayload // returns updated data
     }
     throw new Error('Failed to save data')
-  })
+  });
+}
+
+function deleteTutoring(tutID) {
+  return fetch(`/tutoring/${tutID}`, {
+    method: 'DELETE',
+  }).then((response) => {
+      if (response.ok) {
+        // Deleting success
+        window.location.href = '/';
+      } else {
+        console.error('Failed to delete tutoring:', response.statusText)
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error)
+    })
 }

@@ -216,7 +216,7 @@ class TutoringViewsTestCase(TestCase):
     def test_delete_illegal(self):
         client = Client()
         client.force_login(self.student)
-        response = client.post(reverse("delete_tut", args=[self.tut.id]))
+        response = client.delete(reverse("tutoring", args=[self.tut.id]))
 
         self.assertEqual(response.status_code, 403)
         self.assertTrue(Tutoring.objects.filter(id=self.tut.id).exists())  # validate that not deleted
@@ -224,7 +224,7 @@ class TutoringViewsTestCase(TestCase):
     def test_delete_legal(self):
         client = Client()
         client.force_login(self.teacher)
-        response = client.post(reverse("delete_tut", args=[self.tut.id]))
+        response = client.delete(reverse("tutoring", args=[self.tut.id]))
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Tutoring.objects.filter(id=self.tut.id).exists())  # validate deletion

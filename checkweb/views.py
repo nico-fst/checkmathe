@@ -129,6 +129,14 @@ class TutForm(forms.Form):
 @csrf_exempt
 @login_required
 def tutoring(request, tut_id=None):
+    """changes Tutoring DB
+
+    POST: Creates new Tutoring instance,
+    GET: Returns serializes Tut, else None
+    PUT: Updates Tut with given values
+    DELETE: deletes Tut if found and permission
+    """
+
     # POST: create new Tutoring instance
     if request.method == "POST":
         form = TutForm(request.POST)
@@ -146,12 +154,13 @@ def tutoring(request, tut_id=None):
         else:
             print("Form errors:", form.errors)
 
-    # if GET or PUT: search Tutoring instance
+    # GET, PUT: firstly search for Tutoring instance
     try:
         tut = Tutoring.objects.get(id=tut_id)
     except Tutoring.DoesNotExist:
         return JsonResponse({"error": "Tutoring not found."}, status=404)
 
+    # GET: return serializes Tutoring
     if request.method == "GET":
         return JsonResponse(tut.serialize())
 
@@ -167,31 +176,30 @@ def tutoring(request, tut_id=None):
         except ValueError as e:
             return HttpResponse(f"Illegal value: {e}", status=400)
 
+    # DELETE: delete Tut if found and permission
+    elif request.method == "DELETE":
+        try:
+            # Guard: if sb else than the own teacher tries to delete the tut
+            if request.user != tut.teacher:
+                return HttpResponseForbidden("Permission denied")
+
+            tut.delete()
+            return render(request, "checkweb/index.html", {"message": "Success deleting the Tutoring."})
+        except Tutoring.DoesNotExist:
+            return HttpResponseNotFound(f"Tutoring with ID {tut_id} does not exist.")
+
 
 @csrf_exempt
 @login_required
 def tutoring_view(request, tut_id):
     try:
         tut = Tutoring.objects.get(id=tut_id)
+        if tut.student.id != request.user.id and tut.teacher.id != request.user.id:
+            return HttpResponseForbidden("Permission denied")
+
+        return render(request, "checkweb/tutoring.html", {"tut": tut})
     except Tutoring.DoesNotExist:
         return JsonResponse({"error": f"Tutoring with ID {tut_id} does not exist."}, status=404)
-
-    return render(request, "checkweb/tutoring.html", {"tut": tut})
-
-
-@csrf_exempt
-@login_required
-def tutorings(request, user_id):
-    tuts_given = Tutoring.objects.filter(teacher=user_id)
-    serialized_tuts_given = [t.serialize() for t in tuts_given]
-
-    tuts_taken = Tutoring.objects.filter(student=user_id)
-    serialized_tuts_taken = [t.serialize() for t in tuts_taken]
-
-    return JsonResponse(
-        {"tuts_given": serialized_tuts_given, "tuts_taken": serialized_tuts_taken},
-        safe=False,
-    )
 
 
 def calc_stundenkosten(user, tut):
@@ -249,20 +257,3 @@ def history_view(request, student_id=None):
 @login_required
 def new_tut(request):
     return render(request, "checkweb/new_tut.html", {"form": TutForm()})
-
-
-@csrf_exempt
-@login_required
-@teacher_required
-def delete_tut(request, tut_id):
-    try:
-        tut = Tutoring.objects.get(id=tut_id)
-
-        # if sb else than the own teacher tries to delete the tut
-        if request.user != tut.teacher:
-            return HttpResponseForbidden("Permission denied")
-
-        tut.delete()
-        return render(request, "checkweb/index.html", {"message": "Success deleting the Tutoring."})
-    except Tutoring.DoesNotExist:
-        return HttpResponseNotFound(f"Tutoring with ID {tut_id} does not exist.")
