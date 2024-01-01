@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from django.utils import timezone
 from .models import User, Subject, Tutoring
 import datetime
@@ -13,8 +13,6 @@ class DB_ConsistencyTestCase(TestCase):
     def setUp(self):
         self.stud = Group.objects.get(name="Student")
         self.teach = Group.objects.get(name="Teacher")
-
-        now = timezone.now().date()
 
         self.thore = User.objects.create_user(
             "Thore.st",
@@ -37,7 +35,7 @@ class DB_ConsistencyTestCase(TestCase):
         self.xavier.groups.set([self.teach])
 
         self.tut = Tutoring.objects.create(
-            date=now,
+            date=timezone.now().date(),
             duration=45,
             subject=Subject.objects.create(title="Math"),
             student=self.thore,

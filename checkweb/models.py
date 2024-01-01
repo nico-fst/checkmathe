@@ -25,11 +25,12 @@ class User(AbstractUser):
 
     def serialize(self):
         return {
-            "username": self.username,
             "id": self.id,
+            "username": self.username,
+            "email:": self.email,
             "phone_number": self.phone_number,
             "preis_pro_45": self.preis_pro_45,
-            "group": self.groups.first().name,  # TODO make multiple groups illegal
+            "group": self.groups.first().name,
         }
 
 
@@ -40,7 +41,7 @@ class Subject(models.Model):
         return self.title
 
     def serialize(self):
-        return {"title": self.title}
+        return {"id": self.id, "title": self.title}
 
 
 class Tutoring(models.Model):
