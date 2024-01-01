@@ -15,7 +15,7 @@ class SimpleRequestsTests(TestCase):
         User.objects.create_user("nico.st", "nico.st@mail.de", "password", first_name="Nico", last_name="St")
 
     def test_get_subject(self):
-        response = self.client.get(reverse("getSubject"))
+        response = self.client.get(reverse("getSubjects"))
         self.assertEqual(response.status_code, 200)
 
     def test_add_subject(self):

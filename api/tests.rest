@@ -1,0 +1,19 @@
+GET /api/getSubjects/
+Host: localhost:8000
+Content-Type: application/json
+
+###
+
+
+POST /api/obtain_auth_token
+Host: localhost:8000
+Content-Type: application/json
+
+{"username": "nico_strn", "password": "123"}
+
+###
+
+GET /api/user_list_view
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7

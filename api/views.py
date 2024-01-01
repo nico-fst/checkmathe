@@ -6,7 +6,7 @@ from .serializers import SubjectSerializer
 from rest_framework.views import APIView
 
 @api_view(['GET'])
-def getSubject(request):
+def getSubjects(request):
     subjects = Subject.objects.all()
     serializer = SubjectSerializer(subjects, many=True)  # True: seri multiple items
     return Response(serializer.data)
