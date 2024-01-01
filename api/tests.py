@@ -19,10 +19,20 @@ class SimpleRequestsTests(TestCase):
         self.nico = User.objects.create_user(
             "nico.st", "nico.st@mail.de", "password", first_name="Nico", last_name="St"
         )
+        self.xavier = User.objects.create_user(
+            "xavier.x", "xavier.x@mail.de", "password", first_name="Xavier", last_name="X"
+        )
         self.nico.groups.set([self.teach])
         self.kat = User.objects.create_user(
             "kat.ev", "kat.ev@web.de", "password", first_name="Katniss", last_name="Everdeen"
         )
+
+        resp_token = self.client.post(reverse("obtain_auth_token"), {"username": "nico.st", "password": "password"})
+        self.token_nico = resp_token.json().get("token")
+
+        resp_token = self.client.post(reverse("obtain_auth_token"), {"username": "kat.ev", "password": "password"})
+        self.token_kat = resp_token.json().get("token")
+
         self.tut = Tutoring.objects.create(
             date=timezone.now().date(),
             duration=45,
@@ -51,25 +61,48 @@ class SimpleRequestsTests(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_obtain_auth_token(self):
-        resp_token = self.client.post(reverse("obtain_auth_token"), {"username": "nico.st", "password": "password"})
-        self.token = resp_token.json().get("token")
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
-        resp_usernames = self.client.get(reverse("user_list_view"))
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token_nico}")  # legal as authorized nico
+        resp_usernames_authorized = self.client.get(reverse("user_list_view"))
 
-        self.assertEqual(resp_token.status_code, 200)
-        self.assertEqual(resp_usernames.status_code, 200)
-        self.assertIn("token", json.dumps(resp_token.json()))
-        self.assertIn("nico.st", json.dumps(resp_usernames.json()))
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token wrongtoken")
+        resp_usernames_wront_token = self.client.get(reverse("user_list_view"))
+
+        # TEST authorized: fetched
+        self.assertEqual(resp_usernames_authorized.status_code, 200)
+        self.assertIn("nico.st", json.dumps(resp_usernames_authorized.json()))
+
+        # TEST wrong token: unauthorized resp. wrong token
+        self.assertEqual(resp_usernames_wront_token.status_code, 401)
 
     def test_get_tutoring(self):
-        # get token
-        resp_token = self.client.post(reverse("obtain_auth_token"), {"username": "nico.st", "password": "password"})
-        self.token = resp_token.json().get("token")
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
+        # legal since nico is teacher
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token_nico}")
+        resp_authorized = self.client.get(reverse("tutoring_view", kwargs={"tut_id": 1}))
 
-        # actually get tutoring
-        response = self.client.get(reverse("tutoring_view", kwargs={"tut_id": 1}))
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token}")
+        # illegal since wrong token
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token wrongtoken")
+        resp_wrong_token = self.client.get(reverse("tutoring_view", kwargs={"tut_id": 1}))
 
-        self.assertEqual(response.status_code, 200)  # check if successful
-        self.assertEqual(response.json().get("student"), self.kat.serialize())  # check if right tut
+        # TEST authorized: fetched
+        self.assertEqual(resp_authorized.status_code, 200)  # check if successful
+        self.assertEqual(resp_authorized.json().get("student"), self.kat.serialize())  # check if right tut
+
+        # TEST wrong token: unauthorized
+        self.assertEqual(resp_wrong_token.status_code, 401)
+
+    def test_delete_tutoring(self):
+        # illegal since kat is not teacher of tut
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token_kat}")
+        resp_as_student = self.client.delete(reverse("tutoring_view", kwargs={"tut_id": 1}))
+
+        # TEST as student: not deleted
+        self.assertEqual(resp_as_student.status_code, 403)  # forbidden
+        self.assertEqual(Tutoring.objects.all().count(), 1)  # still 1 Tutoring
+
+        # legal since nico is teacher of tut
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token_nico}")
+        resp_as_teacher = self.client.delete(reverse("tutoring_view", kwargs={"tut_id": 1}))
+
+        # TEST legal: deleted
+        self.assertEqual(resp_as_teacher.status_code, 200)
+        self.assertEqual(Tutoring.objects.all().count(), 0)  # after deletion no Tutoring left

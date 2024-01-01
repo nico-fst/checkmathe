@@ -64,7 +64,7 @@ class TutoringView(APIView):
         return Response(tut.serialize())
 
     def delete(self, request, tut_id):
-        if not IsTeaching():  # Guard: only teacher may delete
+        if not IsTeaching().has_permission(request, self):  # Guard: only teacher may delete
             return Response(
                 {"error": "Permission denied. Only the teacher of this tutoring may update or delete it."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -73,3 +73,10 @@ class TutoringView(APIView):
         tut = get_object_or_404(Tutoring, id=tut_id)
         tut.delete()
         return Response({"message": f"Tutoring session with id {tut_id} has been deleted."})
+
+    # def put(self, reqeust, tut_id):
+    #     if not IsTeaching():  # Guard: only teacher may delete
+    #         return Response(
+    #             {"error": "Permission denied. Only the teacher of this tutoring may update or delete it."},
+    #             status=status.HTTP_403_FORBIDDEN,
+    #         )
