@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser, Group
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
+from django.utils import timezone
 
 
 class User(AbstractUser):
@@ -45,7 +46,7 @@ class Subject(models.Model):
 
 
 class Tutoring(models.Model):
-    date = models.DateField()
+    date = models.DateField(default=timezone.now)
     duration = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)], help_text="Duration must be greater than 0."
     )

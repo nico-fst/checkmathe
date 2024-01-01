@@ -5,7 +5,7 @@ Content-Type: application/json
 ###
 
 
-POST /api/obtain_auth_token
+POST /api/obtain_auth_token/
 Host: localhost:8000
 Content-Type: application/json
 
@@ -13,42 +13,69 @@ Content-Type: application/json
 
 ###
 
-GET /api/user_list_view
+GET /api/user_list_view/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-GET /api/tutoring_view/17
+GET /api/tutoring_view/17/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-GET /api/tutoring_view/15
+GET /api/tutoring_view/15/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-GET /api/tutoring_view/999
+GET /api/tutoring_view/999/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-DELETE /api/tutoring_view/19
+DELETE /api/tutoring_view/19/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-DELETE /api/tutoring_view/17
+DELETE /api/tutoring_view/17/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+PUT /api/tutoring_view/16/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+{"new_values": {
+    "content": "New Content. Ananas."
+}}
+
+###
+
+POST /api/create_tutoring/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+{
+    "YYYY-MM-DD": "2024-01-01",
+    "duration_in_min": 45,
+    "subject_title": "Math",
+    "teacher_username": "nico_strn",
+    "student_username": "kat_ev",
+    "content": "Sinussatz"
+}

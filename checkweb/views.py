@@ -158,7 +158,7 @@ def tutoring(request, tut_id=None):
     try:
         tut = Tutoring.objects.get(id=tut_id)
     except Tutoring.DoesNotExist:
-        return JsonResponse({"error": "Tutoring not found."}, status=404)
+        return JsonResponse({"error": f"Tutoring  with ID {tut_id} not found."}, status=404)
 
     # GET: return serializes Tutoring
     if request.method == "GET":
@@ -199,7 +199,7 @@ def tutoring_view(request, tut_id):
 
         return render(request, "checkweb/tutoring.html", {"tut": tut})
     except Tutoring.DoesNotExist:
-        return JsonResponse({"error": f"Tutoring with ID {tut_id} does not exist."}, status=404)
+        return JsonResponse({"error": f"Tutoring with ID {tut_id} not found."}, status=404)
 
 
 def calc_stundenkosten(user, tut):
