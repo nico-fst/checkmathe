@@ -8,5 +8,8 @@ urlpatterns = [
     path("user_list_view/", views.UserListView.as_view(), name="user_list_view"),
     path("obtain_auth_token/", obtain_auth_token, name="obtain_auth_token"),
     path("tutoring_view/<int:tut_id>/", views.TutoringView.as_view(), name="tutoring_view"),
+    path("user_view/<int:user_id>/", views.UserView.as_view(), name="user_view"),
+    path("user_view/", views.UserView.as_view(), name="user_view"),
+    path("delete_user/<str:username>/", views.DeleteUserView.as_view(), name="delete_user"),
     path("create_tutoring/", views.CreateTutoringView.as_view(), name="create_tutoring"),
 ]
