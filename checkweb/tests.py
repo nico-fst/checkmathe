@@ -6,6 +6,7 @@ import datetime
 from django.urls import reverse
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
+from rest_framework.authtoken.models import Token
 
 
 class DB_ConsistencyTestCase(TestCase):
@@ -82,6 +83,9 @@ class DB_ConsistencyTestCase(TestCase):
         self.assertEqual(self.tut.duration, 45)
         self.assertEqual(self.tut.subject.title, "Math")
         self.assertEqual(self.tut.teacher.username, "Xavier.nai")
+
+    def test_token_post_save(self):
+        self.assertTrue(Token.objects.get(user=self.xavier))
 
 
 class AuthenticationTestCase(TestCase):
@@ -184,13 +188,11 @@ class TutoringViewsTestCase(TestCase):
         )
         self.tut.save()
 
-
     # def test_view_illegal(self):
     #     client = Client()
     #     client.force_login(self.student)
 
     #     response = client.get(reverse)
-
 
     def test_create_legal(self):
         client = Client()
