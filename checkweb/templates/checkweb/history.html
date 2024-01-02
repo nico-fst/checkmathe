@@ -24,7 +24,7 @@
             <td>{{tut.teacher.username}}</td>
             <td>{{tut.subject.title}}</td>
             <td>{{tut.duration}}</td>
-            <td><a href="{% url 'tutoring_view' tut.id %}">{{tut.content}}</a></td>
+            <td><a href="{% url 'checkweb:tutoring_view' tut.id %}">{{tut.content}}</a></td>
         </tr>
         {% endfor %}
     </table>

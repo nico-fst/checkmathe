@@ -23,26 +23,26 @@
                     <a class="nav-link" href="#"><strong>{{ user.username }}</strong></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'history_view' %}">History</a>
+                    <a class="nav-link" href="{% url 'checkweb:history_view' %}">History</a>
                 </li>
 
                 {% if user.groups.first.name == "Teacher" %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'new_tut' %}">New Tutoring</a>
+                        <a class="nav-link" href="{% url 'checkweb:new_tut' %}">New Tutoring</a>
                     </li>
                 {% endif %}
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout_view' %}">Log Out</a>
+                    <a class="nav-link" href="{% url 'checkweb:logout_view' %}">Log Out</a>
                 </li>
 
                 {% else %}
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login_view' %}">Log In</a>
+                    <a class="nav-link" href="{% url 'checkweb:login_view' %}">Log In</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'register' %}">Register</a>
+                    <a class="nav-link" href="{% url 'checkweb:register' %}">Register</a>
                 </li>
 
                 {% endif %}

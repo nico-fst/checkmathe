@@ -16,14 +16,14 @@ class TutoringTestCase(TestCase):
         self.subject_data = {"title": "Test Subject"}
         self.teach = Group.objects.get(name="Teacher")
         self.token = None
-        self.url_tut_1 = reverse("tutoring_view", kwargs={"tut_id": 1})
+        self.url_tut_1 = reverse("api:tutoring_view", kwargs={"tut_id": 1})
 
         self.nico = User.objects.create_user(
             "nico.st", "nico.st@mail.de", "password", first_name="Nico", last_name="St"
         )
         self.nico.groups.set([self.teach])
         resp_token = self.client.post(
-            reverse("obtain_auth_token"), {"username": "nico.st", "password": "password"}
+            reverse("api:obtain_auth_token"), {"username": "nico.st", "password": "password"}
         )
         self.token_nico = resp_token.json().get("token")
 
@@ -32,7 +32,7 @@ class TutoringTestCase(TestCase):
         )
         self.xavier.groups.set([self.teach])
         resp_token = self.client.post(
-            reverse("obtain_auth_token"), {"username": "xavier.x", "password": "password"}
+            reverse("api:obtain_auth_token"), {"username": "xavier.x", "password": "password"}
         )
         self.token_xavier = resp_token.json().get("token")
 
@@ -44,7 +44,7 @@ class TutoringTestCase(TestCase):
             last_name="Everdeen",
         )
         resp_token = self.client.post(
-            reverse("obtain_auth_token"), {"username": "kat.ev", "password": "password"}
+            reverse("api:obtain_auth_token"), {"username": "kat.ev", "password": "password"}
         )
         self.token_kat = resp_token.json().get("token")
 
@@ -128,14 +128,14 @@ class CreateTutoringViewTests(TestCase):
         self.math = Subject.objects.create(title="Math")
         self.teach = Group.objects.get(name="Teacher")
         self.token = None
-        self.url = reverse("create_tutoring")
+        self.url = reverse("api:create_tutoring")
 
         self.nico = User.objects.create_user(
             "nico.st", "nico.st@mail.de", "password", first_name="Nico", last_name="St"
         )
         self.nico.groups.set([self.teach])
         resp_token = self.client.post(
-            reverse("obtain_auth_token"), {"username": "nico.st", "password": "password"}
+            reverse("api:obtain_auth_token"), {"username": "nico.st", "password": "password"}
         )
         self.token_nico = resp_token.json().get("token")
 
@@ -144,7 +144,7 @@ class CreateTutoringViewTests(TestCase):
         )
         self.xavier.groups.set([self.teach])
         resp_token = self.client.post(
-            reverse("obtain_auth_token"), {"username": "xavier.x", "password": "password"}
+            reverse("api:obtain_auth_token"), {"username": "xavier.x", "password": "password"}
         )
         self.token_xavier = resp_token.json().get("token")
 
@@ -156,7 +156,7 @@ class CreateTutoringViewTests(TestCase):
             last_name="Everdeen",
         )
         resp_token = self.client.post(
-            reverse("obtain_auth_token"), {"username": "kat.ev", "password": "password"}
+            reverse("api:obtain_auth_token"), {"username": "kat.ev", "password": "password"}
         )
         self.token_kat = resp_token.json().get("token")
 
@@ -223,7 +223,7 @@ class CreateTutoringViewTests(TestCase):
         # Attempt to create a tutoring session with a non-existent teacher username
         self.client.force_authenticate(user=self.nico)
         response = self.client.post(
-            reverse("create_tutoring"),
+            reverse("api:create_tutoring"),
             {
                 "subject_title": "Math",
                 "teacher_username": "nonexistent_teacher",
@@ -242,7 +242,7 @@ class CreateTutoringViewTests(TestCase):
         # Attempt to create a tutoring session with a student as a teacher
         self.client.force_authenticate(user=self.nico)
         response = self.client.post(
-            reverse("create_tutoring"),
+            reverse("api:create_tutoring"),
             {
                 "subject_title": "Math",
                 "teacher_username": "kat.ev",
@@ -261,7 +261,7 @@ class CreateTutoringViewTests(TestCase):
         # Attempt to create a tutoring session with an invalid date format
         self.client.force_authenticate(user=self.nico)
         response = self.client.post(
-            reverse("create_tutoring"),
+            reverse("api:create_tutoring"),
             {
                 "subject_title": "Math",
                 "teacher_username": "nico.st",
@@ -281,7 +281,7 @@ class CreateTutoringViewTests(TestCase):
         # Attempt to create a tutoring session with an invalid duration (out of range)
         self.client.force_authenticate(user=self.nico)
         response = self.client.post(
-            reverse("create_tutoring"),
+            reverse("api:create_tutoring"),
             {
                 "subject_title": "Math",
                 "teacher_username": "nico.st",
@@ -302,7 +302,7 @@ class CreateTutoringViewTests(TestCase):
         # Attempt to create a tutoring session with empty content
         self.client.force_authenticate(user=self.nico)
         response = self.client.post(
-            reverse("create_tutoring"),
+            reverse("api:create_tutoring"),
             {
                 "subject_title": "Math",
                 "teacher_username": "nico.st",
@@ -334,7 +334,7 @@ class CreateTutoringViewTests(TestCase):
         # Attempt to create a duplicate tutoring session
         self.client.force_authenticate(user=self.nico)
         response = self.client.post(
-            reverse("create_tutoring"),
+            reverse("api:create_tutoring"),
             {
                 "subject_title": "Math",
                 "teacher_username": "nico.st",

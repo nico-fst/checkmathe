@@ -45,6 +45,10 @@ class Subject(models.Model):
         return {"id": self.id, "title": self.title}
 
 
+def validate_pdf(value):
+    if not value.name.endswith(".pdf"):
+        raise ValidationError("Only (one) PDF file allowed.")
+
 class Tutoring(models.Model):
     date = models.DateField(default=timezone.now)
     duration = models.PositiveSmallIntegerField(
@@ -54,6 +58,7 @@ class Tutoring(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="teaching_tutorings")
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="learning_tutorings")
     content = models.TextField()
+    pdf = models.FileField(upload_to="pdfs/", validators=[validate_pdf], null=True, blank=True)
 
     def __str__(self):
         return f"[{self.id}] ({self.date}) {self.student} by {self.teacher} [{self.subject}]"

@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+app_name = "checkweb"
+
 urlpatterns = [
     path("", views.index, name="index"),
     path("tutoring", views.tutoring, name="tutoring"),  # only for providing param differently

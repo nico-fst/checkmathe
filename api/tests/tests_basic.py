@@ -22,11 +22,11 @@ class SimpleRequestsTests(TestCase):
         )
 
     def test_get_subjects(self):
-        response = self.client.get(reverse("get_subjects"))
+        response = self.client.get(reverse("api:get_subjects"))
         self.assertEqual(response.status_code, 200)
 
     def test_add_subject(self):
-        response = self.client.post(reverse("add_subject"), self.subject_data, format="json")
+        response = self.client.post(reverse("api:add_subject"), self.subject_data, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Subject.objects.all().count(), 1)
 
@@ -36,22 +36,22 @@ class SimpleRequestsTests(TestCase):
         self.assertEqual(serializer.data, {"id": 1, "title": "Test Subject"})
 
     def test_user_list_view_unauthorized(self):
-        response = self.client.get(reverse("user_list_view"))
+        response = self.client.get(reverse("api:user_list_view"))
         self.assertEqual(response.status_code, 401)
 
     def test_obtain_auth_token(self):
         resp_token = self.client.post(
-            reverse("obtain_auth_token"), {"username": "nico.st", "password": "password"}
+            reverse("api:obtain_auth_token"), {"username": "nico.st", "password": "password"}
         )
         self.token_nico = resp_token.json().get("token")
 
         self.client.credentials(
             HTTP_AUTHORIZATION=f"Token {self.token_nico}"
         )  # legal as authorized nico
-        resp_usernames_authorized = self.client.get(reverse("user_list_view"))
+        resp_usernames_authorized = self.client.get(reverse("api:user_list_view"))
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Token wrongtoken")
-        resp_usernames_wront_token = self.client.get(reverse("user_list_view"))
+        resp_usernames_wront_token = self.client.get(reverse("api:user_list_view"))
 
         # TEST authorized: fetched
         self.assertEqual(resp_usernames_authorized.status_code, 200)
@@ -73,7 +73,7 @@ class SumViewTests(TestCase):
         self.nico.groups.set([self.teach])
 
         resp_token = self.client.post(
-            reverse("obtain_auth_token"), {"username": "nico.st", "password": "password"}
+            reverse("api:obtain_auth_token"), {"username": "nico.st", "password": "password"}
         )
         self.token_nico = resp_token.json().get("token")
 
@@ -85,7 +85,7 @@ class SumViewTests(TestCase):
             last_name="Everdeen",
         )
         resp_token = self.client.post(
-            reverse("obtain_auth_token"), {"username": "nico.st", "password": "password"}
+            reverse("api:obtain_auth_token"), {"username": "nico.st", "password": "password"}
         )
         self.token_nico = resp_token.json().get("token")
 
@@ -108,14 +108,14 @@ class SumViewTests(TestCase):
         )
 
         self.client.force_authenticate(user=self.nico)
-        response = self.client.get(reverse("sum_view", args=("kat.ev", 2022, 1)))
+        response = self.client.get(reverse("api:sum_view", args=("kat.ev", 2022, 1)))
 
         # TEST 404 if prop preis_pro_45 empty
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         self.kat.preis_pro_45 = 15
         self.kat.save()
-        response = self.client.get(reverse("sum_view", args=("kat.ev", 2022, 1)))
+        response = self.client.get(reverse("api:sum_view", args=("kat.ev", 2022, 1)))
 
         # TEST 200 if prop exists
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -139,13 +139,13 @@ class SumViewTests(TestCase):
         self.kat.save()
 
         # legal as participating student
-        response = self.client.get(reverse("sum_view", args=("kat.ev", 2022, 1)))
+        response = self.client.get(reverse("api:sum_view", args=("kat.ev", 2022, 1)))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # illegal as not participating student
-        response = self.client.get(reverse("sum_view", args=("nico.st", 2022, 1)))
+        response = self.client.get(reverse("api:sum_view", args=("nico.st", 2022, 1)))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_sum_view_unauthenticated(self):
-        response = self.client.get(reverse("sum_view", args=("kat.ev", 2022, 1)))
+        response = self.client.get(reverse("api:sum_view", args=("kat.ev", 2022, 1)))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

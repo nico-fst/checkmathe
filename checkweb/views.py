@@ -124,6 +124,7 @@ class TutForm(forms.Form):
     teacher = forms.ModelChoiceField(queryset=User.objects.filter(groups__name="Teacher"), label="Teacher")
     student = forms.ModelChoiceField(queryset=User.objects.filter(groups__name="Student"), label="Student")
     content = forms.CharField(label="Content", widget=forms.Textarea(attrs={"rows": 4, "cols": 50}))
+    file_upload = forms.FileField(label="Upload PDF", required=False)
 
 
 @csrf_exempt
@@ -150,7 +151,7 @@ def tutoring(request, tut_id=None):
                 content=form.cleaned_data["content"],
             )
             new_tut.save()
-            return HttpResponseRedirect(reverse("tutoring_view", args=[new_tut.id]))
+            return HttpResponseRedirect(reverse("checkweb:tutoring_view", args=[new_tut.id]))
         else:
             print("Form errors:", form.errors)
 

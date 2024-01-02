@@ -62,7 +62,7 @@ class TutoringViewsTestCase(TestCase):
         }
 
         # send POST to view
-        response = client.post(reverse("tutoring"), data=form_data)
+        response = client.post(reverse("checkweb:tutoring"), data=form_data)
 
         self.assertEqual(response.status_code, 302)  # form submission successful?
         self.assertEqual(Tutoring.objects.count(), 2)  # new Tutoring object created?
@@ -79,7 +79,7 @@ class TutoringViewsTestCase(TestCase):
     def test_delete_illegal(self):
         client = Client()
         client.force_login(self.student)
-        response = client.delete(reverse("tutoring", args=[self.tut.id]))
+        response = client.delete(reverse("checkweb:tutoring", args=[self.tut.id]))
 
         self.assertEqual(response.status_code, 403)
         self.assertTrue(
@@ -89,7 +89,7 @@ class TutoringViewsTestCase(TestCase):
     def test_delete_legal(self):
         client = Client()
         client.force_login(self.teacher)
-        response = client.delete(reverse("tutoring", args=[self.tut.id]))
+        response = client.delete(reverse("checkweb:tutoring", args=[self.tut.id]))
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Tutoring.objects.filter(id=self.tut.id).exists())  # validate deletion
