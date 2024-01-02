@@ -2,8 +2,9 @@ from rest_framework.response import Response
 from rest_framework import authentication, permissions
 from rest_framework.decorators import api_view
 from checkweb.models import Subject, User, Tutoring
-from .serializers import SubjectSerializer, TutoringSerializer, FileUploadSerializer
+from .serializers import SubjectSerializer, TutoringSerializer, TutoringApiSerializer
 from rest_framework.views import APIView
+from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from datetime import datetime, date
 from rest_framework import status
@@ -163,137 +164,34 @@ class CreateTutoringView(APIView):
     # parser_classes = (FileUploadParser,)
 
     def post(self, request):
-        new_values = request.data
+        try:
+            tut_serializer = TutoringApiSerializer(data=request.data)
+            tut_serializer.is_valid(raise_exception=True)
+            tut_serializer.save()
 
-        # Guard: check for missing values
-        if (
-            "YYYY-MM-DD" not in new_values
-            or "duration_in_min" not in new_values
-            or "subject_title" not in new_values
-            or "teacher_username" not in new_values
-            or "student_username" not in new_values
-            or "content" not in new_values
-            or new_values["YYYY-MM-DD"] is None
-            or new_values["duration_in_min"] is None
-            or new_values["subject_title"] is None
-            or new_values["teacher_username"] is None
-            or new_values["student_username"] is None
-            or new_values["content"] is None
-        ):
             return Response(
-                {"error": "At least one value is missing."},
+                tut_serializer.data,
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            return Response(
+                str(e),
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # create serializer and check for PDF type
-        # tut_serializer = TutoringSerializer(data=request.data)
-        # if tut_serializer.is_valid():
-        #     pdf_file = request.data["pdf"]
-        #     if not pdf_file.name.lower().endswith(".pdf"):
-        #         return Response(
-        #             {"error": "Only PDF allowed."},
-        #             status=status.HTTP_400_BAD_REQUEST,
-        #         )
-        # else:
+        #     if "pdf" in new_values:
+        #         file = new_values["pdf"]
+        #         if not file.name.lower().endswith(".pdf"):
+        #             return Response(
+        #                 {"error": "Only PDF allowed."},
+        #                 status=status.HTTP_400_BAD_REQUEST,
+        #             )
+        #         new_tut.pdf.save(file.name, new_values["pdf"], save=True)
+        # except ValueError as e:
         #     return Response(
-        #             {"error": tut_serializer.errors},
-        #             status=status.HTTP_400_BAD_REQUEST,
-        #         )
-
-        # Guard: teach, stud usernames do not exist
-        try:
-            teach = User.objects.get(username=new_values["teacher_username"])
-            stud = User.objects.get(username=new_values["student_username"])
-        except User.DoesNotExist:
-            return Response(
-                {"error": "At least one of the usernames do not exist."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        # ... and Guard: they are not in the correct role
-        if teach.groups.first().name != "Teacher" or stud.groups.first().name != "Student":
-            return Response(
-                {"error": "At least one of the users does not fit its role."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        # Guard: date format invalid
-        if not is_date_valid(new_values["YYYY-MM-DD"]):
-            return Response(
-                {"error": "Date format is not valid or in the future."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        # ... and date default: today
-        date = new_values["YYYY-MM-DD"]
-        if not new_values["YYYY-MM-DD"]:
-            date = datetime.today().date()
-
-        # Guard: duration not in (0, 360]
-        duration = round(float(new_values["duration_in_min"]))
-        if duration < 1 or duration > 360:
-            return Response(
-                {"error": "Duration must be in (0, 360] Minutes."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        # Guard: Content empty
-        content = new_values["content"]
-        if len(content) == 0:
-            return Response(
-                {"error": "Content must be provided."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        # create new subject if necessary
-        subject, created = Subject.objects.get_or_create(title=new_values["subject_title"])
-
-        # Guard: recognize duplicate
-        if (
-            Tutoring.objects.filter(
-                date=date,
-                duration=duration,
-                subject=subject,
-                teacher=teach,
-                student=stud,
-                content=content,
-            ).count()
-            != 0
-        ):
-            return Response(
-                {"error": "You should not create a duplicate."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        # tut_serializer.save()
-        # return Response(tut_serializer.data, status=status.HTTP_201_CREATED)
-
-        try:
-            new_tut = Tutoring(
-                date=date,
-                duration=duration,
-                subject=subject,
-                teacher=teach,
-                student=stud,
-                content=content,
-            )
-            new_tut.save()
-
-            if "pdf" in new_values:
-                file = new_values["pdf"]
-                if not file.name.lower().endswith(".pdf"):
-                    return Response(
-                        {"error": "Only PDF allowed."},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-                new_tut.pdf.save(file.name, new_values["pdf"], save=True)
-        except ValueError as e:
-            return Response(
-                {"error": e},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        return Response(new_tut.serialize(), status=status.HTTP_201_CREATED)
+        #         {"error": e},
+        #         status=status.HTTP_400_BAD_REQUEST,
+        #     )
 
 
 class UserView(APIView):

@@ -94,7 +94,3 @@ class Tutoring(models.Model):
             "content": self.content,
             "pdf": "http://127.0.0.1:8000/" + self.pdf.url if self.pdf else None,
         }
-
-
-class FileUpload(models.Model):
-    pdf = models.FileField(upload_to="pdfs/", validators=[validate_pdf], null=True, blank=True)
