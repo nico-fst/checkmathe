@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from datetime import datetime, date
 from rest_framework import status
+from checkweb.views import calc_stundenkosten
 import re
 
 
@@ -304,7 +305,7 @@ class UserView(APIView):
 class DeleteUserView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def delete(self, request, username):
         try:
             user = User.objects.get(username=username)
@@ -323,3 +324,59 @@ class DeleteUserView(APIView):
 
         user.delete()
         return Response({"message": f"User {username} has been deleted."})
+
+
+class SumView(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, stud_username, year, month):
+        """returns Tutorings, the number of Tutorings and the sum of money to pay for the provided month
+
+        Args:
+            ...
+            stud_username (str)
+            year (int)
+            month (int)
+
+        Returns:
+            {
+                "sum": (int),
+                "count_tutorings": (int),
+                "tutorings": (dict(Tutoring.serializes()) ,
+            }
+        """
+
+        # Guard: not teacher or participating in Tutoring
+        if request.user.groups.first().name != "Teacher" and request.user.username != stud_username:
+            return Response(
+                {"error": f"You as student may not spectate other Tutorings."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            stud = User.objects.get(username=stud_username)
+        except User.DoesNotExist:
+            return Response(
+                {"error": f"User {stud_username} does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Guard: user.preis_pro_45 is None
+        if stud.preis_pro_45 is None:
+            return Response(
+                {"error": f"User {stud_username} has no specified preis_pro_45."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        tuts = Tutoring.objects.filter(date__year=year, date__month=month, student=stud)
+
+        sum_money = sum(calc_stundenkosten(stud, tut) for tut in tuts)
+
+        return Response(
+            {
+                "sum": sum_money,
+                "count_tutorings": len(tuts),
+                "tutorings": [tut.serialize() for tut in tuts],
+            }
+        )

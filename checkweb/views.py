@@ -203,8 +203,11 @@ def tutoring_view(request, tut_id):
 
 
 def calc_stundenkosten(user, tut):
-    return round(user.preis_pro_45 * (tut.duration / 45), 2)
-
+    if user.preis_pro_45 is not None:
+        return round(user.preis_pro_45 * (tut.duration / 45), 2)
+    else:
+        return None 
+    
 
 @csrf_exempt
 @login_required

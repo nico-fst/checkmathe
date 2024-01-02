@@ -109,3 +109,10 @@ DELETE /api/delete_user/new.user/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+GET /api/sum_view/harry_pot/2023/12
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
