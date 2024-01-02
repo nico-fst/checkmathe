@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import authentication, permissions
 from rest_framework.decorators import api_view
 from checkweb.models import Subject, User, Tutoring
-from .serializers import SubjectSerializer, TutoringSerializer
+from .serializers import SubjectSerializer, TutoringSerializer, FileUploadSerializer
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from datetime import datetime, date
@@ -60,6 +60,15 @@ class IsTeaching(permissions.BasePermission):
             return False
 
         return tut.teacher == request.user
+
+
+class IsTeacher(permissions.BasePermission):
+    "Is requesting User in Group Teacher?"
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            return request.user.groups.filter(name="Teacher").exists()
+        return False
 
 
 def is_date_valid(date_str):
@@ -150,13 +159,31 @@ class CreateTutoringView(APIView):
     """
 
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = (FileUploadParser,)
+    permission_classes = [IsTeacher]
+    # parser_classes = (FileUploadParser,)
 
     def post(self, request):
         new_values = request.data
-        print(new_values.keys(), "----------")
-        pdf_file = new_values["file"]
+
+        # Guard: check for missing values
+        if (
+            "YYYY-MM-DD" not in new_values
+            or "duration_in_min" not in new_values
+            or "subject_title" not in new_values
+            or "teacher_username" not in new_values
+            or "student_username" not in new_values
+            or "content" not in new_values
+            or new_values["YYYY-MM-DD"] is None
+            or new_values["duration_in_min"] is None
+            or new_values["subject_title"] is None
+            or new_values["teacher_username"] is None
+            or new_values["student_username"] is None
+            or new_values["content"] is None
+        ):
+            return Response(
+                {"error": "At least one value is missing."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # create serializer and check for PDF type
         # tut_serializer = TutoringSerializer(data=request.data)
@@ -172,13 +199,6 @@ class CreateTutoringView(APIView):
         #             {"error": tut_serializer.errors},
         #             status=status.HTTP_400_BAD_REQUEST,
         #         )
-
-        # Guard: only teacher may create
-        if not IsTeaching():
-            return Response(
-                {"error": "Permission denied. Only teacher may create Tutorings."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
 
         # Guard: teach, stud usernames do not exist
         try:
@@ -258,7 +278,15 @@ class CreateTutoringView(APIView):
                 content=content,
             )
             new_tut.save()
-            new_tut.pdf.save(pdf_file.name, pdf_file, save=True)
+
+            if "pdf" in new_values:
+                file = new_values["pdf"]
+                if not file.name.lower().endswith(".pdf"):
+                    return Response(
+                        {"error": "Only PDF allowed."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                new_tut.pdf.save(file.name, new_values["pdf"], save=True)
         except ValueError as e:
             return Response(
                 {"error": e},
@@ -266,15 +294,6 @@ class CreateTutoringView(APIView):
             )
 
         return Response(new_tut.serialize(), status=status.HTTP_201_CREATED)
-
-
-class IsTeacher(permissions.BasePermission):
-    "Is requesting User in Group Teacher?"
-
-    def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            return request.user.groups.filter(name="Teacher").exists()
-        return False
 
 
 class UserView(APIView):
@@ -403,3 +422,14 @@ class SumView(APIView):
                 "tutorings": [tut.serialize() for tut in tuts],
             }
         )
+
+
+class FileUploadView(APIView):
+    def post(self, request):
+        ser = FileUploadSerializer(data=request.data)
+
+        if ser.is_valid():
+            ser.save()
+            return Response(ser.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)

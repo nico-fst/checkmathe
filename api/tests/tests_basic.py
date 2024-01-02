@@ -72,11 +72,6 @@ class SumViewTests(TestCase):
         )
         self.nico.groups.set([self.teach])
 
-        resp_token = self.client.post(
-            reverse("api:obtain_auth_token"), {"username": "nico.st", "password": "password"}
-        )
-        self.token_nico = resp_token.json().get("token")
-
         self.kat = User.objects.create_user(
             "kat.ev",
             "kat.ev@web.de",
@@ -84,10 +79,6 @@ class SumViewTests(TestCase):
             first_name="Katniss",
             last_name="Everdeen",
         )
-        resp_token = self.client.post(
-            reverse("api:obtain_auth_token"), {"username": "nico.st", "password": "password"}
-        )
-        self.token_nico = resp_token.json().get("token")
 
     def test_sum_view_authenticated_teacher(self):
         tutoring1 = Tutoring.objects.create(

@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from django.urls import reverse
-from django.contrib.sites.models import Site
 
 
 class User(AbstractUser):
@@ -93,5 +92,9 @@ class Tutoring(models.Model):
             "teacher": self.teacher.serialize(),
             "student": self.student.serialize(),
             "content": self.content,
-            "pdf": "http://127.0.0.1:8000/" + self.pdf.url if self.pdf.url else None,
+            "pdf": "http://127.0.0.1:8000/" + self.pdf.url if self.pdf else None,
         }
+
+
+class FileUpload(models.Model):
+    pdf = models.FileField(upload_to="pdfs/", validators=[validate_pdf], null=True, blank=True)

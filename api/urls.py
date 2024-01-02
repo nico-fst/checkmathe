@@ -14,5 +14,6 @@ urlpatterns = [
     path("user_view/", views.UserView.as_view(), name="user_view"),
     path("delete_user/<str:username>/", views.DeleteUserView.as_view(), name="delete_user"),
     path("create_tutoring/", views.CreateTutoringView.as_view(), name="create_tutoring"),
-    path("sum_view/<str:stud_username>/<int:year>/<int:month>", views.SumView.as_view(), name="sum_view"),
+    path("sum_view/<str:stud_username>/<int:year>/<int:month>/", views.SumView.as_view(), name="sum_view"),
+    path("fileupload/", views.FileUploadView.as_view(), name="fileupload")
 ]

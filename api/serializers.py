@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from checkweb.models import Subject, Tutoring
+from checkweb.models import Subject, Tutoring, FileUpload
 
 
 class SubjectSerializer(serializers.ModelSerializer):
@@ -19,3 +19,8 @@ class TutoringSerializer(serializers.ModelSerializer):
         representation["teacher"] = instance.teacher.serialize()
         representation["student"] = instance.student.serialize()
         return representation
+
+class FileUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileUpload
+        fields = ["pdf"]

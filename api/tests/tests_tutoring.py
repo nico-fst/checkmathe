@@ -7,6 +7,8 @@ from rest_framework.test import APIClient
 from checkweb.models import Subject, Tutoring, User
 from ..serializers import SubjectSerializer
 from checkweb.views import calc_stundenkosten
+from django.core.files.base import ContentFile
+import os
 import json
 
 
@@ -15,26 +17,17 @@ class TutoringTestCase(TestCase):
         self.client = APIClient()
         self.subject_data = {"title": "Test Subject"}
         self.teach = Group.objects.get(name="Teacher")
-        self.token = None
         self.url_tut_1 = reverse("api:tutoring_view", kwargs={"tut_id": 1})
 
         self.nico = User.objects.create_user(
             "nico.st", "nico.st@mail.de", "password", first_name="Nico", last_name="St"
         )
         self.nico.groups.set([self.teach])
-        resp_token = self.client.post(
-            reverse("api:obtain_auth_token"), {"username": "nico.st", "password": "password"}
-        )
-        self.token_nico = resp_token.json().get("token")
 
         self.xavier = User.objects.create_user(
             "xavier.x", "xavier.x@mail.de", "password", first_name="Xavier", last_name="X"
         )
         self.xavier.groups.set([self.teach])
-        resp_token = self.client.post(
-            reverse("api:obtain_auth_token"), {"username": "xavier.x", "password": "password"}
-        )
-        self.token_xavier = resp_token.json().get("token")
 
         self.kat = User.objects.create_user(
             "kat.ev",
@@ -43,10 +36,6 @@ class TutoringTestCase(TestCase):
             first_name="Katniss",
             last_name="Everdeen",
         )
-        resp_token = self.client.post(
-            reverse("api:obtain_auth_token"), {"username": "kat.ev", "password": "password"}
-        )
-        self.token_kat = resp_token.json().get("token")
 
         self.tut = Tutoring.objects.create(
             date=timezone.now().date(),
@@ -58,13 +47,13 @@ class TutoringTestCase(TestCase):
         )
 
     def test_get_tutoring(self):
-        # legal since nico is teacher
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token_nico}")
-        resp_authorized = self.client.get(self.url_tut_1)
-
         # illegal since wrong token
         self.client.credentials(HTTP_AUTHORIZATION=f"Token wrongtoken")
         resp_wrong_token = self.client.get(self.url_tut_1)
+
+        # legal since nico is teacher
+        self.client.force_authenticate(user=self.nico)
+        resp_authorized = self.client.get(self.url_tut_1)
 
         # TEST authorized: fetched
         self.assertEqual(resp_authorized.status_code, 200)  # check if successful
@@ -77,7 +66,7 @@ class TutoringTestCase(TestCase):
 
     def test_delete_tutoring(self):
         # illegal since kat is not teacher of tut
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token_kat}")
+        self.client.force_authenticate(user=self.kat)
         resp_as_student = self.client.delete(self.url_tut_1)
 
         # TEST as student: not deleted
@@ -85,7 +74,7 @@ class TutoringTestCase(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 1)  # still 1 Tutoring
 
         # illegal since xavier is not teacher of this tut
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token_xavier}")
+        self.client.force_authenticate(user=self.xavier)
         resp_as_wrong_teacher = self.client.delete(self.url_tut_1)
 
         # TEST wrong teacher: not deleted
@@ -93,7 +82,7 @@ class TutoringTestCase(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 1)  # still 1 Tutoring
 
         # legal since nico is teacher of tut
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token_nico}")
+        self.client.force_authenticate(user=self.nico)
         resp_as_teacher = self.client.delete(self.url_tut_1)
 
         # TEST legal: deleted
@@ -102,7 +91,7 @@ class TutoringTestCase(TestCase):
 
     def test_put_tutoring(self):
         # illegal since xavier is not teacher of this tut
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token_xavier}")
+        self.client.force_authenticate(user=self.xavier)
         resp_as_wrong_teacher = self.client.put(self.url_tut_1)
 
         # TEST as wrong teacher: not put
@@ -110,7 +99,7 @@ class TutoringTestCase(TestCase):
         self.assertEqual(self.tut.content, "Lorem ipsum")  # Content not changed
 
         # legal since nico is teacher of this tut
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token_nico}")
+        self.client.force_authenticate(user=self.nico)
         resp_as_own_teacher = self.client.put(
             self.url_tut_1,
             {"new_values": {"content": "New Content. Ananas."}},
@@ -127,26 +116,16 @@ class CreateTutoringViewTests(TestCase):
         self.client = APIClient()
         self.math = Subject.objects.create(title="Math")
         self.teach = Group.objects.get(name="Teacher")
-        self.token = None
         self.url = reverse("api:create_tutoring")
 
         self.nico = User.objects.create_user(
             "nico.st", "nico.st@mail.de", "password", first_name="Nico", last_name="St"
         )
         self.nico.groups.set([self.teach])
-        resp_token = self.client.post(
-            reverse("api:obtain_auth_token"), {"username": "nico.st", "password": "password"}
-        )
-        self.token_nico = resp_token.json().get("token")
 
         self.xavier = User.objects.create_user(
             "xavier.x", "xavier.x@mail.de", "password", first_name="Xavier", last_name="X"
         )
-        self.xavier.groups.set([self.teach])
-        resp_token = self.client.post(
-            reverse("api:obtain_auth_token"), {"username": "xavier.x", "password": "password"}
-        )
-        self.token_xavier = resp_token.json().get("token")
 
         self.kat = User.objects.create_user(
             "kat.ev",
@@ -155,10 +134,6 @@ class CreateTutoringViewTests(TestCase):
             first_name="Katniss",
             last_name="Everdeen",
         )
-        resp_token = self.client.post(
-            reverse("api:obtain_auth_token"), {"username": "kat.ev", "password": "password"}
-        )
-        self.token_kat = resp_token.json().get("token")
 
     def test_create_tutoring_successful(self):
         data = {
@@ -351,3 +326,64 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(
             Tutoring.objects.all().count(), 1
         )  # Tutoring session should not be created
+
+
+class CreateTutoringViewTests(TestCase):
+    def setUp(self):
+        self.teacher_user = User.objects.create_user(
+            username="teacher",
+            password="teacherpass",
+            first_name="teacher",
+            last_name="tlast",
+            email="teacher@mail.de",
+        )
+        self.teacher_user.groups.set([Group.objects.get(name="Teacher")])
+        self.student_user = User.objects.create_user(
+            username="student",
+            password="studentpass",
+            first_name="student",
+            last_name="slast",
+            email="student@mail.de",
+        )
+        self.student_user.groups.set([Group.objects.get(name="Student")])
+
+        self.legal_pdf_content = b"PDF Content"
+        self.pdf = ContentFile(self.legal_pdf_content, name="legal.pdf")
+
+        self.non_pdf_content = b"Non-PDF Content"
+        self.non_pdf_file = ContentFile(self.non_pdf_content, name="non_pdf.txt")
+
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.teacher_user)
+
+    def test_legal_file_upload(self):
+        # Create a legal tutoring data dictionary with a valid PDF URL
+        tutoring_data = {
+            "YYYY-MM-DD": "2024-01-01",
+            "duration_in_min": 45,
+            "subject_title": "Math",
+            "teacher_username": "teacher",
+            "student_username": "student",
+            "content": "Sinussatz",
+            "pdf": self.pdf,
+        }
+
+        response = self.client.post("/api/create_tutoring/", data=tutoring_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Tutoring.objects.all().count(), 1)
+
+    def test_illegal_file_upload(self):
+        # Create an illegal tutoring data dictionary with an invalid PDF URL
+        tutoring_data = {
+            "YYYY-MM-DD": "2024-01-01",
+            "duration_in_min": 45,
+            "subject_title": "Math",
+            "teacher_username": "teacher",
+            "student_username": "student",
+            "content": "Sinussatz",
+            "pdf": self.non_pdf_file,
+        }
+
+        response = self.client.post("/api/create_tutoring/", data=tutoring_data)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
