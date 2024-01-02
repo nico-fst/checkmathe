@@ -1,9 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.core.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
+from django.urls import reverse
+from django.contrib.sites.models import Site
 
 
 class User(AbstractUser):
@@ -49,13 +51,14 @@ def validate_pdf(value):
     if not value.name.endswith(".pdf"):
         raise ValidationError("Only (one) PDF file allowed.")
 
+
 class Tutoring(models.Model):
     date = models.DateField(default=timezone.now)
     duration = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)], help_text="Duration must be greater than 0."
     )
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
-    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="teaching_tutorings")
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="teaching_tutorings")
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="learning_tutorings")
     content = models.TextField()
     pdf = models.FileField(upload_to="pdfs/", validators=[validate_pdf], null=True, blank=True)
@@ -90,4 +93,5 @@ class Tutoring(models.Model):
             "teacher": self.teacher.serialize(),
             "student": self.student.serialize(),
             "content": self.content,
+            "pdf": "http://127.0.0.1:8000/" + self.pdf.url if self.pdf.url else None,
         }

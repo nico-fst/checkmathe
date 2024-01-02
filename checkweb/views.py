@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django import forms
 from django.views.decorators.csrf import csrf_exempt
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator
 from functools import wraps
 from django.db import models
 from django.db.models.functions import TruncMonth
@@ -60,7 +60,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse("login_view"))
+    return HttpResponseRedirect(reverse("checkweb:login_view"))
 
 
 # New Students
@@ -124,7 +124,7 @@ class TutForm(forms.Form):
     teacher = forms.ModelChoiceField(queryset=User.objects.filter(groups__name="Teacher"), label="Teacher")
     student = forms.ModelChoiceField(queryset=User.objects.filter(groups__name="Student"), label="Student")
     content = forms.CharField(label="Content", widget=forms.Textarea(attrs={"rows": 4, "cols": 50}))
-    file_upload = forms.FileField(label="Upload PDF", required=False)
+    pdf = forms.FileField(label="Upload PDF", required=False, widget=forms.FileInput(attrs={'accept': '.pdf'}), validators=[FileExtensionValidator(allowed_extensions=['pdf'])])
 
 
 @csrf_exempt
@@ -140,7 +140,7 @@ def tutoring(request, tut_id=None):
 
     # POST: create new Tutoring instance
     if request.method == "POST":
-        form = TutForm(request.POST)
+        form = TutForm(request.POST, request.FILES)
         if form.is_valid():
             new_tut = Tutoring(
                 date=form.cleaned_data["date"],
@@ -149,6 +149,7 @@ def tutoring(request, tut_id=None):
                 teacher=form.cleaned_data["teacher"],
                 student=form.cleaned_data["student"],
                 content=form.cleaned_data["content"],
+                pdf=form.cleaned_data["pdf"]
             )
             new_tut.save()
             return HttpResponseRedirect(reverse("checkweb:tutoring_view", args=[new_tut.id]))
@@ -207,7 +208,7 @@ def calc_stundenkosten(user, tut):
     if user.preis_pro_45 is not None:
         return round(user.preis_pro_45 * (tut.duration / 45), 2)
     else:
-        return None 
+        return -9999 
     
 
 @csrf_exempt

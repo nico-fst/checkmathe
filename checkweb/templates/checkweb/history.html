@@ -15,6 +15,7 @@
             <th>Teacher</th>
             <th>Subject</th>
             <th>Duration</th>
+            <th>PDF</th>
             <th>Content</th>
         </tr>
         {% for tut in data.tutorings %}
@@ -24,7 +25,20 @@
             <td>{{tut.teacher.username}}</td>
             <td>{{tut.subject.title}}</td>
             <td>{{tut.duration}}</td>
-            <td><a href="{% url 'checkweb:tutoring_view' tut.id %}">{{tut.content}}</a></td>
+            <td>
+                {% if tut.pdf.url is not None %}
+                    <a href="{{ tut.pdf.url }}" target="_blank">PDF</a>
+                {% else %}
+                    -
+                {% endif %}
+            </th>
+            <td>
+                {% if tut.content is not None %}
+                    <a href="{% url 'checkweb:tutoring_view' tut.id %}">{{tut.content}}</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>

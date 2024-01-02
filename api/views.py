@@ -2,12 +2,13 @@ from rest_framework.response import Response
 from rest_framework import authentication, permissions
 from rest_framework.decorators import api_view
 from checkweb.models import Subject, User, Tutoring
-from .serializers import SubjectSerializer
+from .serializers import SubjectSerializer, TutoringSerializer
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from datetime import datetime, date
 from rest_framework import status
 from checkweb.views import calc_stundenkosten
+from rest_framework.parsers import FileUploadParser
 import re
 
 
@@ -150,16 +151,34 @@ class CreateTutoringView(APIView):
 
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = (FileUploadParser,)
 
     def post(self, request):
+        new_values = request.data
+        print(new_values.keys(), "----------")
+        pdf_file = new_values["file"]
+
+        # create serializer and check for PDF type
+        # tut_serializer = TutoringSerializer(data=request.data)
+        # if tut_serializer.is_valid():
+        #     pdf_file = request.data["pdf"]
+        #     if not pdf_file.name.lower().endswith(".pdf"):
+        #         return Response(
+        #             {"error": "Only PDF allowed."},
+        #             status=status.HTTP_400_BAD_REQUEST,
+        #         )
+        # else:
+        #     return Response(
+        #             {"error": tut_serializer.errors},
+        #             status=status.HTTP_400_BAD_REQUEST,
+        #         )
+
         # Guard: only teacher may create
         if not IsTeaching():
             return Response(
                 {"error": "Permission denied. Only teacher may create Tutorings."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-
-        new_values = request.data
 
         # Guard: teach, stud usernames do not exist
         try:
@@ -226,6 +245,9 @@ class CreateTutoringView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # tut_serializer.save()
+        # return Response(tut_serializer.data, status=status.HTTP_201_CREATED)
+
         try:
             new_tut = Tutoring(
                 date=date,
@@ -236,10 +258,11 @@ class CreateTutoringView(APIView):
                 content=content,
             )
             new_tut.save()
+            new_tut.pdf.save(pdf_file.name, pdf_file, save=True)
         except ValueError as e:
             return Response(
                 {"error": e},
-                status=status.HTTP_403_FORBIDDEN,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         return Response(new_tut.serialize(), status=status.HTTP_201_CREATED)

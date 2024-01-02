@@ -21,16 +21,27 @@
             <button class="Edit" id="edit-duration">Edit</button>
         {% endif %}
     </li>
-    <li>
-        Content: <span id="tut_content">{{tut.content}}</span>
-        {% if user.groups.first.name == "Teacher" %}
-            <button class="Edit" id="edit-content">Edit</button>
-        {% endif %}
-    </li>
     <li>Subject: {{tut.subject}}</li>
     <li>Teacher: {{tut.teacher.username}}</li>
     <li>Student: {{tut.student.username}}</li>
 </ul>
+
+<p>Content: <span id="tut_content">{{tut.content}}</span>
+        {% if user.groups.first.name == "Teacher" %}
+            <button class="Edit" id="edit-content">Edit</button>
+        {% else %}
+            -
+        {% endif %}
+</p>
+
+<p>
+    {% if tut.pdf %}
+        <a href="{{ tut.pdf.url }}" target="_blank">Download PDF</a>
+    {% else %}
+        (No PDF uploaded)
+    {% endif %}
+</p>
+
 
 {% if user.groups.first.name == "Teacher" %}
     <button class="Delete" id="delete-btn">Delete</button>
