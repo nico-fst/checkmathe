@@ -1,0 +1,55 @@
+{% extends "checkweb/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<h1>History of Tutorings</h1>
+
+{% for month, data in tuts_by_month %}
+{% if data.count > 0 %}
+    <h2>{{ month|date:"Y-m" }}</h2>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Student</th>
+            <th>Teacher</th>
+            <th>Subject</th>
+            <th>Duration</th>
+            <th>PDF</th>
+            <th>Content</th>
+        </tr>
+        {% for tut in data.tutorings %}
+        <tr>
+            <td>{{tut.date}}</td>
+            <td>{{tut.student.username}}</td>
+            <td>{{tut.teacher.username}}</td>
+            <td>{{tut.subject.title}}</td>
+            <td>{{tut.duration}}</td>
+            <td>
+                {% if tut.pdf.url is not None %}
+                    <a href="{{ tut.pdf.url }}" target="_blank">PDF</a>
+                {% else %}
+                    -
+                {% endif %}
+            </th>
+            <td>
+                {% if tut.content is not None %}
+                    <a href="{% url 'checkweb:tutoring_view' tut.id %}">{{tut.content}}</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <hr>
+    <p>{{data.sum_money}}€</p>
+    <hr><hr>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'checkweb/history.js' %}"></script>
+{% endblock %}

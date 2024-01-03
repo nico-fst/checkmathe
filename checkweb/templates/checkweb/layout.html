@@ -1,0 +1,64 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <title>{% block title %}CheckMathe{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'checkweb/styles.css' %}">
+    {% block script %}{% endblock %}
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">CheckMathe</a>
+    
+        <div>
+            <ul class="navbar-nav mr-auto">
+                {% if user.is_authenticated %}
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><strong>{{ user.username }}</strong></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'checkweb:history_view' %}">History</a>
+                </li>
+
+                {% if user.groups.first.name == "Teacher" %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'checkweb:new_tut' %}">New Tutoring</a>
+                    </li>
+                {% endif %}
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'checkweb:logout_view' %}">Log Out</a>
+                </li>
+
+                {% else %}
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'checkweb:login_view' %}">Log In</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'checkweb:register' %}">Register</a>
+                </li>
+
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="body" style="margin: 25px;">
+        {% if message %}
+        <div>{{ message }}</div>
+        {% endif %}
+
+        {% block body %}
+        {% endblock %}
+    </div>
+    </body>
+</body>
+
+</html>
