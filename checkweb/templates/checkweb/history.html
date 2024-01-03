@@ -15,6 +15,7 @@
             <th>Teacher</th>
             <th>Subject</th>
             <th>Duration</th>
+            <th>Payment Status</th>
             <th>PDF</th>
             <th>Content</th>
         </tr>
@@ -25,6 +26,7 @@
             <td>{{tut.teacher.username}}</td>
             <td>{{tut.subject.title}}</td>
             <td>{{tut.duration}}</td>
+            <td>{{tut.paid_status}}</td>
             <td>
                 {% if tut.pdf.url is not None %}
                     <a href="{{ tut.pdf.url }}" target="_blank">PDF</a>

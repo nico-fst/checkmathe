@@ -15,4 +15,5 @@ urlpatterns = [
     path("delete_user/<str:username>/", views_user.DeleteUserView.as_view(), name="delete_user"),
     path("create_tutoring/", views_tutoring.CreateTutoringView.as_view(), name="create_tutoring"),
     path("sum_view/<str:stud_username>/<int:year>/<int:month>/", views_basic.SumView.as_view(), name="sum_view"),
+    path("change_paid_per_month/", views_tutoring.ChangePaidPerMonthView.as_view(), name="change_paid_per_month"),
 ]

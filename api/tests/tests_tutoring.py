@@ -58,11 +58,13 @@ class TutoringTestCase(TestCase):
         # legal since nico is teacher
         self.client.force_authenticate(user=self.nico)
         resp_authorized = self.client.get(self.url_tut_1)
+        resp_student_username = resp_authorized.json().get("student_username")
+        resp_student = User.objects.get(username=resp_student_username)
 
         # TEST authorized: fetched
         self.assertEqual(resp_authorized.status_code, 200)  # check if successful
         self.assertEqual(
-            resp_authorized.json().get("student"), self.kat.serialize()
+            resp_student, self.kat
         )  # check if right tut
 
         # TEST wrong token: unauthorized

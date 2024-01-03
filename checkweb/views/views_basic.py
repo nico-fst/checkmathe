@@ -82,8 +82,11 @@ def group_tutorings_by_month(request, student_id):
 @csrf_exempt
 @login_required
 def history_view(request, student_id=None):
+    grouped_tuts = group_tutorings_by_month(request, student_id)
+    sorted_tuts = sorted(grouped_tuts, key=lambda x: (x[0].year, x[0].month), reverse=True)
+
     return render(
         request,
         "checkweb/history.html",
-        {"tuts_by_month": group_tutorings_by_month(request, student_id)},
+        {"tuts_by_month": sorted_tuts},
     )

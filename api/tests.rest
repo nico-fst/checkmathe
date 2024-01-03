@@ -55,7 +55,7 @@ Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-PUT /api/tutoring_view/16/
+PUT /api/tutoring_view/15/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
@@ -66,13 +66,24 @@ Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
+PUT /api/tutoring_view/15/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+{"new_values": {
+    "paid": false
+}}
+
+###
+
 POST /api/create_tutoring/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 {
-    "YYYY-MM-DD": "2024-01-01",
+    "yyyy-mm-dd": "2024-01-01",
     "duration_in_min": 45,
     "subject_title": "Math",
     "teacher_username": "nico_strn",
@@ -116,3 +127,17 @@ GET /api/sum_view/harry_pot/2023/12
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+POST /api/change_paid_per_month/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+{
+    "student_username": "kat_ev",
+    "year": 2024,
+    "month": 1,
+    "paid": false
+}

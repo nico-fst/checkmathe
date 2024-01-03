@@ -24,6 +24,20 @@
     <li>Subject: {{tut.subject}}</li>
     <li>Teacher: {{tut.teacher.username}}</li>
     <li>Student: {{tut.student.username}}</li>
+    <li>Status:
+        {% if tut.paid_status == "paid" %}
+            paid
+        {% else %}
+            unpaid:
+            {% if tut.paid_status == "future" %}
+                in current month (to get paid next month)
+            {% else %}
+                to pay
+            {% endif %}
+        {% endif %}
+        {% if user.groups.first.name == "Teacher" %}
+        {% endif %}
+    </li>
 </ul>
 
 <p>Content: <span id="tut_content">{{tut.content}}</span>

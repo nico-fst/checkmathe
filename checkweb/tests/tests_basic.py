@@ -57,12 +57,15 @@ class DB_ConsistencyTestCase(TestCase):
                 username="Xavier.x", last_name="X", email="xavier.x@mail.de"
             )
 
-    def test_default_gropu_being_student(self):
+    def test_default_group_being_student(self):
         self.teach_without_specified_group = User.objects.create(
             username="user", first_name="userf", last_name="userl", email="userf@mail.de", password="pass"
         )
 
         self.assertEqual(self.teach_without_specified_group.groups.first().name, "Student")
+        
+    def test_default_paid_being_false(self):
+        self.assertEqual(self.tut.paid, False)
 
     def test_email_unique(self):
         with self.assertRaises(IntegrityError):

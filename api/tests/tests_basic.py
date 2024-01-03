@@ -146,3 +146,155 @@ class SumViewTests(TestCase):
     def test_sum_view_unauthenticated(self):
         response = self.client.get(reverse("api:sum_view", args=("kat.ev", 2022, 1)))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class ChangePaidPerMonthTests(TestCase):
+    def setUp(self):
+        self.math = Subject.objects.create(title="Math")
+        self.teach = Group.objects.get(name="Teacher")
+        self.url = reverse("api:create_tutoring")
+
+        self.nico = User.objects.create_user(
+            "nico.st", "nico.st@mail.de", "password", first_name="Nico", last_name="St"
+        )
+        self.nico.groups.set([self.teach])
+
+        self.xavier = User.objects.create_user(
+            "xavier.x", "xavier.x@mail.de", "password", first_name="Xavier", last_name="X"
+        )
+        self.xavier.groups.set([self.teach])
+
+        self.kat = User.objects.create_user(
+            "kat.ev",
+            "kat.ev@web.de",
+            "password",
+            first_name="Katniss",
+            last_name="Everdeen",
+        )
+
+        self.tutoring_nico1 = Tutoring.objects.create(
+            date="2022-01-01",
+            duration=45,
+            subject=self.math,
+            student=self.kat,
+            teacher=self.nico,
+            content="Lorem ipsum",
+        )
+        self.tutoring_nico2 = Tutoring.objects.create(
+            date="2022-01-02",
+            duration=30,
+            subject=self.math,
+            student=self.kat,
+            teacher=self.nico,
+            content="Ananas",
+        )
+        self.tutoring_xavier = Tutoring.objects.create(
+            date="2022-01-02",
+            duration=30,
+            subject=self.math,
+            student=self.kat,
+            teacher=self.xavier,
+            content="Ananas",
+        )
+
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.nico)
+
+    def test_paid_default_false(self):
+        self.assertEqual(self.tutoring_nico1.paid, False)
+        self.assertEqual(self.tutoring_nico2.paid, False)
+        self.assertEqual(self.tutoring_xavier.paid, False)
+
+    def test_paid(self):
+        resp_paid_missing = self.client.post(
+            reverse("api:change_paid_per_month"),
+            {"student_username": "kat.ev", "year": 2022, "month": 1},
+            format="json",
+        )
+
+        # TEST paid msising: not changed
+        self.assertEqual(resp_paid_missing.status_code, status.HTTP_400_BAD_REQUEST)
+        tuts_nico = Tutoring.objects.filter(teacher=self.nico)
+        for tut in tuts_nico:
+            self.assertEqual(tut.paid, False)
+        self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)
+
+        resp_paid_invalid = self.client.post(
+            reverse("api:change_paid_per_month"),
+            {"student_username": "kat.ev", "year": 2022, "month": 1, "paid": "INVALID"},
+            format="json",
+        )
+
+        # TEST paid invalid: not changed
+        self.assertEqual(resp_paid_invalid.status_code, status.HTTP_400_BAD_REQUEST)
+        tuts_nico = Tutoring.objects.filter(teacher=self.nico)
+        for tut in tuts_nico:
+            self.assertEqual(tut.paid, False)
+        self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)
+
+        resp_paid_true = self.client.post(
+            reverse("api:change_paid_per_month"),
+            {"student_username": "kat.ev", "year": 2022, "month": 1, "paid": True},
+            format="json",
+        )
+
+        # TEST paid true: all tuts of nico changed to true, xavier not touched
+        self.assertEqual(resp_paid_true.status_code, status.HTTP_200_OK)
+        tuts_nico = Tutoring.objects.filter(teacher=self.nico)
+        for tut in tuts_nico:
+            self.assertEqual(tut.paid, True)
+        self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)
+
+    def test_student_username(self):
+        resp_username_missing = self.client.post(
+            reverse("api:change_paid_per_month"),
+            {"year": 2022, "month": 1, "paid": True},
+            format="json",
+        )
+
+        # TEST username missing: not changed
+        self.assertEqual(resp_username_missing.status_code, status.HTTP_400_BAD_REQUEST)
+        tuts_nico = Tutoring.objects.filter(teacher=self.nico)
+        for tut in tuts_nico:
+            self.assertEqual(tut.paid, False)
+        self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)
+
+        resp_username_not_existing = self.client.post(
+            reverse("api:change_paid_per_month"),
+            {"NOTEXISTING": "kat.ev", "year": 2022, "month": 1, "paid": False},
+            format="json",
+        )
+
+        # TEST username not existing: not changed
+        self.assertEqual(resp_username_not_existing.status_code, status.HTTP_400_BAD_REQUEST)
+        tuts_nico = Tutoring.objects.filter(teacher=self.nico)
+        for tut in tuts_nico:
+            self.assertEqual(tut.paid, False)
+        self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)
+
+    def test_year_month(self):
+        resp_year_missing = self.client.post(
+            reverse("api:change_paid_per_month"),
+            {"student_username": "kat.ev", "month": 1, "paid": True},
+            format="json",
+        )
+
+        # TEST year missing: not changed
+        self.assertEqual(resp_year_missing.status_code, status.HTTP_400_BAD_REQUEST)
+        tuts_nico = Tutoring.objects.filter(teacher=self.nico)
+        for tut in tuts_nico:
+            self.assertEqual(tut.paid, False)
+        self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)
+
+        resp_month_missing = self.client.post(
+            reverse("api:change_paid_per_month"),
+            {"student_username": "kat.ev", "year": 2023, "paid": True},
+            format="json",
+        )
+
+        # TEST month missing: not changed
+        self.assertEqual(resp_month_missing.status_code, status.HTTP_400_BAD_REQUEST)
+        tuts_nico = Tutoring.objects.filter(teacher=self.nico)
+        for tut in tuts_nico:
+            self.assertEqual(tut.paid, False)
+        self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)

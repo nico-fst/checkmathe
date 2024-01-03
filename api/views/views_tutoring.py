@@ -70,7 +70,55 @@ class TutoringView(APIView):
         value_dict_as_string = " ".join([f"{key}: {value}" for key, value in new_values.items()])
         return Response(
             {
-                "message": f"Tutoring session with id {tut_id} has been modified: {value_dict_as_string}."
+                "message": f"Tutoring session with id {tut_id} has been modified: {value_dict_as_string}.",
+                "new": tut.serialize(),
+            }
+        )
+
+
+class ChangePaidPerMonthView(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsTeacher]
+
+    def post(self, request):
+        data = request.data
+
+        # Guard: paid must be boolean
+        if not isinstance(data.get("paid"), bool):
+            return Response(
+                {"error": "paid must be boolean"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Guard: year, month must be provided
+        if not data.get("year") or not data.get("month"):
+            return Response(
+                {"error": "year, month must be provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Guard: student_username must be valid
+        if not User.objects.filter(username=data.get("student_username")).exists():
+            return Response(
+                {"error": "student_username must be valid"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        tuts = Tutoring.objects.filter(
+            teacher__id=request.user.id,
+            student__username=data.get("student_username"),
+            date__year=data.get("year"),
+            date__month=data.get("month"),
+        )
+
+        for tut in tuts:
+            tut.paid = data.get("paid")
+            tut.save()
+
+        return Response(
+            {
+                "message": f"Success changing paid status of Tutorings.",
+                "new": [tut.serialize() for tut in tuts],
             }
         )
 

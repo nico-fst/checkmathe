@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from django.urls import reverse
+from datetime import date, datetime
 
 
 class User(AbstractUser):
@@ -61,12 +62,21 @@ class Tutoring(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="learning_tutorings")
     content = models.TextField()
     pdf = models.FileField(upload_to="pdfs/", validators=[validate_pdf], null=True, blank=True)
+    paid = models.BooleanField(default=False)
+
+    @property
+    def paid_status(self):
+        if self.paid:
+            return "paid"
+        if self.date.year == timezone.now().year and self.date.month == timezone.now().month:
+            return "future"
+        return "pending"
 
     def __str__(self):
         return f"[{self.id}] ({self.date}) {self.student} by {self.teacher} [{self.subject}]"
 
-    # Ensure only teacher, student user being teacher, student prop
     def clean(self):
+        # Ensure only teacher, student user being teacher, student prop
         if self.teacher and self.teacher.groups.first().name != "Teacher":
             raise ValidationError(
                 "Only users with the Group 'Teacher' can be assigned as teachers for tutoring sessions."
@@ -77,6 +87,10 @@ class Tutoring(models.Model):
                 "Only users with the Group 'Student' can be assigned as students for tutoring sessions."
             )
 
+        # Ensure incoming date:String? getitng saved as date
+        if type(self.date) == str:
+            self.date = datetime.strptime(self.date, "%Y-%m-%d").date()
+
     # Checks if valid
     def save(self, *args, **kwargs):
         self.clean()
@@ -86,11 +100,13 @@ class Tutoring(models.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "date": self.date,
-            "duration": self.duration,
-            "subject": self.subject.serialize(),
-            "teacher": self.teacher.serialize(),
-            "student": self.student.serialize(),
+            "yyyy-mm-dd": self.date,
+            "duration_in_min": self.duration,
+            "subject_title": self.subject.title,
+            "teacher_username": self.teacher.username,
+            "student_username": self.student.username,
             "content": self.content,
             "pdf": "http://127.0.0.1:8000/" + self.pdf.url if self.pdf else None,
+            "paid": self.paid,
+            "paid_status": self.paid_status,
         }
