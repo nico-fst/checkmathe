@@ -25,38 +25,42 @@ class TutoringView(APIView):
     """
 
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated, IsParticipating]
+    parser_classes = [JSONParser, MultiPartParser, FileUploadParser]
+
+    # POSTing a new tut, the teacher can not participate in None
+    def get_permissions(self):
+        if self.request.method in ["POST"]:
+            return [IsTeacher()]
+        return [IsTeacher(), IsParticipating()]
 
     # returns serialized Tutoring
     def get(self, request, tut_id):
         tut = get_object_or_404(Tutoring, id=tut_id)
         return Response(tut.serialize())
 
-    def delete(self, request, tut_id):
-        # Guard: only teacher may delete
-        if not IsTeaching().has_permission(request, self):
+    def post(self, request):
+        try:
+            tut_serializer = TutoringApiSerializer(data=request.data)
+            tut_serializer.is_valid(raise_exception=True)
+            tut_serializer.save()
+
             return Response(
-                {
-                    "error": "Permission denied. Only the teacher of this tutoring may update or delete it."
-                },
-                status=status.HTTP_403_FORBIDDEN,
+                tut_serializer.data,
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            return Response(
+                str(e),
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
+    def delete(self, request, tut_id):
         tut = get_object_or_404(Tutoring, id=tut_id)
         tut.delete()
         return Response({"message": f"Tutoring session with id {tut_id} has been deleted."})
 
     # updates values in {new_values} if own teacher
     def put(self, request, tut_id):
-        # Guard: only teacher may put
-        if not IsTeaching():
-            return Response(
-                {
-                    "error": "Permission denied. Only the teacher of this tutoring may update or delete it."
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
         # retrieve provided new values
         tut = get_object_or_404(Tutoring, id=tut_id)
         new_values = request.data.get("new_values", None)
@@ -76,11 +80,35 @@ class TutoringView(APIView):
         )
 
 
-class ChangePaidPerMonthView(APIView):
+class PaidPerMonthView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsTeacher]
 
+    def get(self, request, student_username, year, month):
+        """Get all Tutorings of specific student of specific year, month
+        grouped by paid status
+        + if at least one is unpaid"""
+        
+        tuts = Tutoring.objects.filter(
+            teacher=request.user,
+            student__username=student_username,
+            date__year=year,
+            date__month=month,
+        )
+        
+        return Response(
+            {
+                # if at least one tut should be paid in this month and is not paid yet
+                "all_paid": not any(not tut.paid for tut in tuts),
+                "paid_tuts": [tut.serialize() for tut in tuts if tut.paid],
+                "unpaid_tuts": [tut.serialize() for tut in tuts if not tut.paid],
+            },
+            status=status.HTTP_200_OK,
+        )
+
     def post(self, request):
+        """Set paid status of all Tutorings of specific student of specific year, month to True/False"""
+        
         data = request.data
 
         # Guard: paid must be boolean
@@ -105,7 +133,7 @@ class ChangePaidPerMonthView(APIView):
             )
 
         tuts = Tutoring.objects.filter(
-            teacher__id=request.user.id,
+            teacher=request.user,
             student__username=data.get("student_username"),
             date__year=data.get("year"),
             date__month=data.get("month"),
@@ -121,44 +149,3 @@ class ChangePaidPerMonthView(APIView):
                 "new": [tut.serialize() for tut in tuts],
             }
         )
-
-
-class CreateTutoringView(APIView):
-    """Creates new Tutoring if requesting User is Teacher and provides valid data
-
-    Parameters:
-    - user_data (dict): A dictionary containing information for the new Tutoring instance.
-        Example:
-        {
-            "YYYY-MM-DD": "2024-01-01",
-            "duration_in_min": 45,
-            "subject_title": "Math",
-            "teacher_username": "nico_strn",
-            "student_username": "kat_ev",
-            "content": "Sinussatz"
-        }
-
-    Returns:
-    - str: Status message indicating success or failure of creation.
-
-    """
-
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsTeacher]
-    parser_classes = [JSONParser, MultiPartParser, FileUploadParser]
-
-    def post(self, request):
-        try:
-            tut_serializer = TutoringApiSerializer(data=request.data)
-            tut_serializer.is_valid(raise_exception=True)
-            tut_serializer.save()
-
-            return Response(
-                tut_serializer.data,
-                status=status.HTTP_201_CREATED,
-            )
-        except Exception as e:
-            return Response(
-                str(e),
-                status=status.HTTP_400_BAD_REQUEST,
-            )

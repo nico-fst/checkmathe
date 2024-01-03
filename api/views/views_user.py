@@ -16,15 +16,6 @@ from ..serializers import SubjectSerializer, TutoringSerializer, TutoringApiSeri
 from .views_permissions import IsParticipating, IsTeacher, IsTeaching
 
 
-class UserListView(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        usernames = [(user.username, user.email) for user in User.objects.all()]
-        return Response(usernames)
-
-
 def is_date_valid(date_str):
     try:
         input_date = datetime.strptime(date_str, "%Y-%m-%d").date()  # parse to datetime object
@@ -37,12 +28,17 @@ class UserView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsTeacher]
 
-    def get(self, request, user_id):
+    def get(self, request, username=None):
+        # If no user specified, return all usrs
+        if not username:
+            return Response([user.serialize() for user in User.objects.all()])
+
+        # If specified, return specific user
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(username=username)
         except User.DoesNotExist:
             return Response(
-                {"error": f"User with id {user_id} does not exist."},
+                {"error": f"User {username} does not exist."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -80,11 +76,6 @@ class UserView(APIView):
 
         return Response(new_user.serialize(), status=status.HTTP_201_CREATED)
 
-
-class DeleteUserView(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
     def delete(self, request, username):
         try:
             user = User.objects.get(username=username)
@@ -92,13 +83,6 @@ class DeleteUserView(APIView):
             return Response(
                 {"error": f"User {username} does not exist."},
                 status=status.HTTP_404_NOT_FOUND,
-            )
-
-        # Guard: user not teacher and tries to delete someone else
-        if request.user.groups.first().name != "Teacher" and request.user.username != username:
-            return Response(
-                {"error": f"You as student may not delete other Users :D."},
-                status=status.HTTP_403_FORBIDDEN,
             )
 
         user.delete()

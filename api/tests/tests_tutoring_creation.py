@@ -20,7 +20,7 @@ class CreateTutoringViewTests(TestCase):
     def setUp(self):
         self.math = Subject.objects.create(title="Math")
         self.teach = Group.objects.get(name="Teacher")
-        self.url = reverse("api:create_tutoring")
+        self.url = reverse("api:tutoring")
 
         self.nico = User.objects.create_user(
             "nico.st", "nico.st@mail.de", "password", first_name="Nico", last_name="St"
@@ -45,7 +45,7 @@ class CreateTutoringViewTests(TestCase):
     def test_creation_permisions(self):
         self.client.force_authenticate(user=None)
         resp_unauthorized = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Math",
                 "teacher_username": "nico.st",
@@ -63,7 +63,7 @@ class CreateTutoringViewTests(TestCase):
 
         self.client.force_authenticate(user=self.kat)
         resp_as_student = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Math",
                 "teacher_username": "nico.st",
@@ -81,7 +81,7 @@ class CreateTutoringViewTests(TestCase):
 
         self.client.force_authenticate(user=self.nico)
         resp_valid = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Math",
                 "teacher_username": "nico.st",
@@ -99,7 +99,7 @@ class CreateTutoringViewTests(TestCase):
 
     def test_creation_subject(self):
         resp_subject_missing = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "teacher_username": "nico.st",
                 "student_username": "kat.ev",
@@ -115,7 +115,7 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 0)
 
         resp_subject_new = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -133,7 +133,7 @@ class CreateTutoringViewTests(TestCase):
 
     def test_creation_teacher(self):
         resp_teacher_missing = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "student_username": "kat.ev",
@@ -149,7 +149,7 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 0)
 
         resp_teacher_not_existing = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "INVALID_USER",
@@ -166,7 +166,7 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 0)
 
         resp_teacher_valid = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -184,7 +184,7 @@ class CreateTutoringViewTests(TestCase):
 
     def test_creation_student(self):
         resp_student_missing = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -200,7 +200,7 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 0)
 
         resp_student_not_existing = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -217,7 +217,7 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 0)
 
         resp_student_valid = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -235,7 +235,7 @@ class CreateTutoringViewTests(TestCase):
 
     def test_creation_yyyy_mm_dd(self):
         resp_yyyy_mm_dd_missing = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -251,7 +251,7 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 0)
 
         resp_yyyy_mm_dd_invalid = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -268,7 +268,7 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 0)
 
         resp_yyyy_mm_dd_in_future = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -286,7 +286,7 @@ class CreateTutoringViewTests(TestCase):
 
     def test_creation_duration(self):
         resp_valid = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -303,7 +303,7 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 1)
 
         resp_missing = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -319,7 +319,7 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 1)
 
         resp_too_small = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -336,7 +336,7 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 1)
 
         resp_too_large = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -364,7 +364,7 @@ class CreateTutoringViewTests(TestCase):
         self.non_pdf_file = ContentFile(self.non_pdf_content, name="non_pdf.txt")
 
         resp_with_invalid_pdf = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",
@@ -382,7 +382,7 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 0)
 
         resp_with_pdf = self.client.post(
-            reverse("api:create_tutoring"),
+            reverse("api:tutoring"),
             {
                 "subject_title": "Chemistry",
                 "teacher_username": "nico.st",

@@ -21,7 +21,7 @@ class TutoringTestCase(TestCase):
         self.client = APIClient()
         self.subject_data = {"title": "Test Subject"}
         self.teach = Group.objects.get(name="Teacher")
-        self.url_tut_1 = reverse("api:tutoring_view", kwargs={"tut_id": 1})
+        self.url_tut_1 = reverse("api:tutoring", kwargs={"tut_id": 1})
 
         self.nico = User.objects.create_user(
             "nico.st", "nico.st@mail.de", "password", first_name="Nico", last_name="St"

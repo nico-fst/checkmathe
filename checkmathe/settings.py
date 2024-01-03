@@ -37,6 +37,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     "checkweb",
     "rest_framework",
+    "drf_yasg",
     "rest_framework.authtoken",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -46,6 +47,15 @@ INSTALLED_APPS = [
     # "django.contrib.sites",
     "django.contrib.staticfiles",
 ]
+
+# REST_FRAMEWORK = {
+#     "DEFAULT_AUTHENTICATION_CLASSES": (
+#         "rest_framework.authentication.BasicAuthentication",
+#         "rest_framework.authentication.SessionAuthentication",
+#     ),
+#     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+# }
+
 
 AUTH_USER_MODEL = "checkweb.User"  # otherwise clash at User model
 

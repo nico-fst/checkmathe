@@ -15,19 +15,22 @@ import re
 from ..serializers import SubjectSerializer, TutoringSerializer, TutoringApiSerializer
 
 
-@api_view(["GET"])
-def get_subjects(request):
-    subjects = Subject.objects.all()
-    serializer = SubjectSerializer(subjects, many=True)  # True: seri multiple items
-    return Response(serializer.data)
-
-
-@api_view(["POST"])
-def add_subject(request):
-    serializer = SubjectSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-    return Response(serializer.data)
+class SubjectView(APIView):
+    def get(self, request):
+        """Returns all serialized Subject objects"""
+        
+        subjects = Subject.objects.all()
+        serializer = SubjectSerializer(subjects, many=True)  # True: seri multiple items
+        return Response(serializer.data)
+    
+    def post(self, request):
+        """Creates a new Subject object;
+        Returns it serialized"""
+        
+        serializer = SubjectSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+        return Response(serializer.data)    
 
 
 class SumView(APIView):
@@ -40,7 +43,7 @@ class SumView(APIView):
         Args:
             ...
             stud_username (str)
-            year (int)
+            year: (int)
             month (int)
 
         Returns:

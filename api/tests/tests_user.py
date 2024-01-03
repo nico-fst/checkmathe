@@ -37,14 +37,12 @@ class UserViewTests(TestCase):
         )
 
     def test_get_user_teacher(self):
-        response = self.client.get(
-            reverse("api:user_view", kwargs={"user_id": self.student_user.id})
-        )
+        response = self.client.get(reverse("api:user", kwargs={"username": self.student_user.username}))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_nonexistent_user(self):
         self.client.force_authenticate(user=self.teacher_user)
-        response = self.client.get(reverse("api:user_view", kwargs={"user_id": 999}))
+        response = self.client.get(reverse("api:user", kwargs={"username": "INVALID"}))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_post_user_teacher(self):
@@ -57,7 +55,7 @@ class UserViewTests(TestCase):
             "last_name": "Doe",
             "phone_number": "1234567890",
         }
-        response = self.client.post(reverse("api:user_view"), data, format="json")
+        response = self.client.post(reverse("api:user"), data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_post_existing_user_teacher(self):
@@ -70,7 +68,7 @@ class UserViewTests(TestCase):
             "last_name": "Doe",
             "phone_number": "1234567890",
         }
-        response = self.client.post(reverse("api:user_view"), data, format="json")
+        response = self.client.post(reverse("api:user"), data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
@@ -97,27 +95,20 @@ class DeleteUserViewTests(TestCase):
     def test_delete_user_teacher(self):
         self.client.force_authenticate(user=self.teacher_user)
         response = self.client.delete(
-            reverse("api:delete_user", kwargs={"username": self.student_user.username})
+            reverse("api:user", kwargs={"username": self.student_user.username})
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_nonexistent_user(self):
         self.client.force_authenticate(user=self.teacher_user)
         response = self.client.delete(
-            reverse("api:delete_user", kwargs={"username": "nonexistent_user"})
+            reverse("api:user", kwargs={"username": "nonexistent_user"})
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_student_cannot_delete_other_student(self):
         self.client.force_authenticate(user=self.student_user)
         response = self.client.delete(
-            reverse("api:delete_user", kwargs={"username": self.teacher_user.username})
+            reverse("api:user", kwargs={"username": self.teacher_user.username})
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_delete_student_can_delete_self(self):
-        self.client.force_authenticate(user=self.student_user)
-        response = self.client.delete(
-            reverse("api:delete_user", kwargs={"username": self.student_user.username})
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
