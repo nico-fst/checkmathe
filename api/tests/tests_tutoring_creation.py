@@ -1,16 +1,19 @@
-from django.test import TestCase
-from django.urls import reverse
-from django.contrib.auth.models import Group
 from rest_framework import status
-from django.utils import timezone
 from rest_framework.test import APIClient
-from checkweb.models import Subject, Tutoring, User
-from ..serializers import SubjectSerializer
-from checkweb.views import calc_stundenkosten
+
+from django.contrib.auth.models import Group
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
+from django.urls import reverse
+from django.utils import timezone
+
 import os
 import json
+
+from checkweb.models import Subject, Tutoring, User
+from checkweb.views.views_basic import calc_stundenkosten
+from ..serializers import SubjectSerializer
 
 
 class CreateTutoringViewTests(TestCase):
@@ -353,7 +356,9 @@ class CreateTutoringViewTests(TestCase):
         # valid without file tested above
 
         self.legal_pdf_content = b"PDF Content"
-        self.pdf = SimpleUploadedFile("sample.pdf", self.legal_pdf_content, content_type="application/pdf")
+        self.pdf = SimpleUploadedFile(
+            "sample.pdf", self.legal_pdf_content, content_type="application/pdf"
+        )
 
         self.non_pdf_content = b"Non-PDF Content"
         self.non_pdf_file = ContentFile(self.non_pdf_content, name="non_pdf.txt")
@@ -385,7 +390,7 @@ class CreateTutoringViewTests(TestCase):
                 "yyyy_mm_dd": "2023-01-01",
                 "duration_in_min": 360,
                 "content": "Sinussatz",
-                "pdf": self.pdf
+                "pdf": self.pdf,
             },
             format="multipart",
         )
