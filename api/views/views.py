@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import authentication, permissions
 from rest_framework.decorators import api_view
 from checkweb.models import Subject, User, Tutoring
-from .serializers import SubjectSerializer, TutoringSerializer, TutoringApiSerializer
+from ..serializers import SubjectSerializer, TutoringSerializer, TutoringApiSerializer
 from rest_framework.views import APIView
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
