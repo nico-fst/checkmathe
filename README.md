@@ -1,3 +1,6 @@
+![Django CI](https://github.com/nico-fst/checkmathe/actions/workflows/django.yml/badge.svg)
+![Gitguardian Scan](https://github.com/nico-fst/checkmathe/actions/workflows/gitguardian.yml/badge.svg)
+
 # checkmathe
 conceptual website for students to book and manage tutorings
 
