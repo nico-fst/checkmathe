@@ -1,0 +1,143 @@
+GET /api/getSubjects/
+Host: localhost:8000
+Content-Type: application/json
+
+###
+
+
+POST /api/obtain_auth_token/
+Host: localhost:8000
+Content-Type: application/json
+
+{"username": "nico_strn", "password": "123"}
+
+###
+
+GET /api/user_list_view/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+GET /api/tutoring_view/17/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+GET /api/tutoring_view/15/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+GET /api/tutoring_view/999/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+DELETE /api/tutoring_view/19/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+DELETE /api/tutoring_view/17/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+PUT /api/tutoring_view/15/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+{"new_values": {
+    "content": "New Content. Ananas."
+}}
+
+###
+
+PUT /api/tutoring_view/15/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+{"new_values": {
+    "paid": false
+}}
+
+###
+
+POST /api/create_tutoring/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+{
+    "yyyy-mm-dd": "2024-01-01",
+    "duration_in_min": 45,
+    "subject_title": "Math",
+    "teacher_username": "nico_strn",
+    "student_username": "kat_ev",
+    "content": "Sinussatz"
+}
+
+###
+
+GET /api/user_view/1
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+POST /api/user_view/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+{
+    "username": "new.user",
+    "email": "new.user@mail.de",
+    "password": "123",
+    "first_name": "new",
+    "last_name": "user",
+    "phone_number": "23948798"
+}
+
+###
+
+DELETE /api/delete_user/new.user/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+GET /api/sum_view/harry_pot/2023/12
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+###
+
+POST /api/change_paid_per_month/
+Host: localhost:8000
+Content-Type: application/json
+Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+
+{
+    "student_username": "kat_ev",
+    "year": 2024,
+    "month": 1,
+    "paid": false
+}

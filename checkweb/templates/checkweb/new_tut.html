@@ -5,8 +5,9 @@
 
 <!-- tut_id=1 as placeholder since in POST not used and no need for separate functions -->
 <h1>Neues Tutoring anlegen</h1>
-<form method="post" action="{% url 'tutoring' tut_id=1 %}" 
-    style="display: flex; flex-direction: column; width: 15rem;">
+<form method="post" action="{% url 'checkweb:tutoring' tut_id=1 %}" 
+    style="display: flex; flex-direction: column; width: 15rem;"
+    enctype="multipart/form-data">
     {% csrf_token %}
     {{ form }}
     <button type="submit">Submit</button>

@@ -11,29 +11,54 @@
 <ul>
     <li>
         Date: <span id="tut_date">{{tut.date}}</span>
-        {% if user.role.title == "Teacher" %}
+        {% if user.groups.first.name == "Teacher" %}
             <button class="Edit" id="edit-date">Edit</button>
         {% endif %}
     </li>
     <li>
         Duration: <span id="tut_duration">{{tut.duration}}</span>
-        {% if user.role.title == "Teacher" %}
+        {% if user.groups.first.name == "Teacher" %}
             <button class="Edit" id="edit-duration">Edit</button>
-        {% endif %}
-    </li>
-    <li>
-        Content: <span id="tut_content">{{tut.content}}</span>
-        {% if user.role.title == "Teacher" %}
-            <button class="Edit" id="edit-content">Edit</button>
         {% endif %}
     </li>
     <li>Subject: {{tut.subject}}</li>
     <li>Teacher: {{tut.teacher.username}}</li>
     <li>Student: {{tut.student.username}}</li>
+    <li>Status:
+        {% if tut.paid_status == "paid" %}
+            paid
+        {% else %}
+            unpaid:
+            {% if tut.paid_status == "future" %}
+                in current month (to get paid next month)
+            {% else %}
+                to pay
+            {% endif %}
+        {% endif %}
+        {% if user.groups.first.name == "Teacher" %}
+        {% endif %}
+    </li>
 </ul>
 
-{% if user.role.title == "Teacher" %}
-    <button class="Delete" id="delete-btn" onclick="">Delete</button>
+<p>Content: <span id="tut_content">{{tut.content}}</span>
+        {% if user.groups.first.name == "Teacher" %}
+            <button class="Edit" id="edit-content">Edit</button>
+        {% else %}
+            -
+        {% endif %}
+</p>
+
+<p>
+    {% if tut.pdf %}
+        <a href="{{ tut.pdf.url }}" target="_blank">Download PDF</a>
+    {% else %}
+        (No PDF uploaded)
+    {% endif %}
+</p>
+
+
+{% if user.groups.first.name == "Teacher" %}
+    <button class="Delete" id="delete-btn">Delete</button>
 {% endif %}
 
 {% endblock %}

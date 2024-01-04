@@ -4,7 +4,7 @@
 
 <h2>Login</h2>
 
-<form action="{% url 'login' %}" method="post">
+<form action="{% url 'checkweb:login_view' %}" method="post">
     {% csrf_token %}
     <div class="form-group">
         <input autofocus class="form-control" type="text" name="username" placeholder="Username">
@@ -15,6 +15,6 @@
     <input class="btn btn-primary" type="submit" value="Login">
 </form>
 
-Don't have an account? <a href="{% url 'register' %}">Register here.</a>
+Don't have an account? <a href="{% url 'checkweb:register' %}">Register here.</a>
 
 {% endblock %}

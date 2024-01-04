@@ -8,7 +8,7 @@
 <div>{{ message }}</div>
 {% endif %}
 
-<form action="{% url 'register' %}" method="post">
+<form action="{% url 'checkweb:register' %}" method="post">
     {% csrf_token %}
     <div class="form-group">
         <input class="form-control" autofocus type="text" name="first_name" placeholder="First Name">
@@ -39,6 +39,6 @@
 </form>
 
 
-Already have an account? <a href="{% url 'login' %}">Log In here.</a> <br>
+Already have an account? <a href="{% url 'checkweb:login_view' %}">Log In here.</a> <br>
 
 {% endblock %}
