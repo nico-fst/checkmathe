@@ -16,6 +16,7 @@ urlpatterns = [
     ),  # only for providing param differently
     path("history_view/<int:student_id>", views.history_view, name="history_view"),
     path("login_view", views.login_view, name="login_view"),
+    path("login_demo", views.login_demo, name="login_demo"),
     path("logout_view", views.logout_view, name="logout_view"),
     path("register", views.register, name="register"),
 ]

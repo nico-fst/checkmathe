@@ -43,6 +43,16 @@ def login_view(request):
             )
     else:
         return render(request, "checkweb/login.html")
+    
+def login_demo(request):
+    demo_user = User.objects.get(username="demo_user")
+    user = authenticate(request, username=demo_user.username, password="123")
+    login(request, user)
+    return render(
+        request,
+        "checkweb/index.html",
+        {"message": "You signed in as a demo user. Look around and try things out :)"},
+    )
 
 
 def logout_view(request):

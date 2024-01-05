@@ -25,7 +25,13 @@ from ..models import User, Subject, Tutoring
 
 
 def index(request):
-    return render(request, "checkweb/index.html")
+    are_payments_pending = Tutoring.objects.filter(
+        student=request.user, paid_status="pending"
+    ).exists()
+    
+    return render(request, "checkweb/index.html", {
+        "message": "There are pending payments: View them at History."
+    })
 
 
 def calc_stundenkosten(user, tut):
