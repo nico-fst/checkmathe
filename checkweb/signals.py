@@ -1,5 +1,5 @@
 from django.db.models.signals import post_migrate
-from django.contrib.auth.signals import user_logged_out
+from django.contrib.auth.signals import user_logged_out, user_logged_in
 from django.dispatch import receiver
 from django.contrib.auth.models import Group
 from django.db.models.signals import post_save
@@ -12,6 +12,21 @@ from django.utils import timezone
 def create_demo_user():
     """Creates demo User with Tutorings today and in the past"""
     if not User.objects.filter(username="demo_user").exists():
+        demo_user = User.objects.create_user(
+            "demo_user",
+            "demo.user@mail.de",
+            "123",
+            first_name="Demo",
+            last_name="User",
+            preis_pro_45=20,
+        )
+        demo_user.save()
+
+
+@receiver(user_logged_in)
+def creae_demo_user_content(sender, request, user, **kwargs):
+    """(Only) when demo users logs in, creae demo Tutorings"""
+    if user and user.username == "demo_user":
         demo_user = User.objects.create_user(
             "demo_user",
             "demo.user@mail.de",
@@ -66,10 +81,8 @@ def create_demo_user():
             content="Durch die aufgegebenen Rechenaufgaben kann sie den Satz des Pythagoras nun in verschiedenen Sachkontexten zielsicher anwenden. Wir haben den Satz heute mit Geometrie verbunden (vor allem Pythagoras im Dreidimensionalen) und ich habe ihr wieder Aufgaben mit Tipps mitgegeben. Damit kann sie versuchen, ihr räumliches Verständnis noch besser mit Mathematik zu verbinden.",
         )
         tut_last_last.save()
-        
-        # TODO add PDFs to Tutorings
 
-        print("Created the demo User including her Tutorings.")
+        # TODO add PDFs to Tutorings
 
 
 @receiver(post_migrate)
@@ -98,7 +111,7 @@ def trigger_demo_user_creation(sender, **kwargs):
 
 @receiver(user_logged_out)
 def reset_demo_user(sender, request, user, **kwargs):
-    """Deletes and recreates the demo user on its logout."""
+    """Deletes and recreates the demo user and all its Tutorings on its logout."""
     if user and user.username == "demo_user":
         user.delete()
         create_demo_user()
