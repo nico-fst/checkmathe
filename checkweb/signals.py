@@ -1,4 +1,4 @@
-from django.db.models.signals import post_migrate
+from django.db.models.signals import post_migrate, pre_delete
 from django.contrib.auth.signals import user_logged_out, user_logged_in
 from django.dispatch import receiver
 from django.contrib.auth.models import Group
@@ -115,3 +115,8 @@ def reset_demo_user(sender, request, user, **kwargs):
     if user and user.username == "demo_user":
         user.delete()
         create_demo_user()
+
+@receiver(pre_delete, sender=Tutoring)
+def delete_tutoring_pdf(sender, instance, **kwargs):
+    if instance.pdf:
+        instance.pdf.delete(save=False)
