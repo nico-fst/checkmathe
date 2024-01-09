@@ -3,3 +3,4 @@ djangorestframework
 PyPDF2
 python-dotenv
 drf-yasg
+icalendar

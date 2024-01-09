@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import views_basic, views_tutoring, views_permissions, views_user
+from .views import views_basic, views_tutoring, views_permissions, views_user, views_book
 from rest_framework.authtoken.views import obtain_auth_token
 
 app_name = "api"
@@ -14,5 +14,6 @@ urlpatterns = [
     path("sum/<str:stud_username>/<int:year>/<int:month>/", views_basic.SumView.as_view(), name="sum"),
     path("paid_per_month/", views_tutoring.PaidPerMonthView.as_view(), name="paid_per_month"),
     path("paid_per_month/<str:student_username>/<int:year>/<int:month>/", views_tutoring.PaidPerMonthView.as_view(), name="paid_per_month"),
+    # path("book", views_book.BookView.as_view(), name="book"),
 ]
 

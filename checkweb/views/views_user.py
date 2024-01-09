@@ -34,7 +34,7 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            return render(request, "checkweb/index.html", {"message": "Login successfull"})
+            return HttpResponseRedirect(reverse("checkweb:index"))
         else:
             return render(
                 request,
@@ -43,7 +43,8 @@ def login_view(request):
             )
     else:
         return render(request, "checkweb/login.html")
-    
+
+
 def login_demo(request):
     demo_user = User.objects.get(username="demo_user")
     user = authenticate(request, username=demo_user.username, password="123")

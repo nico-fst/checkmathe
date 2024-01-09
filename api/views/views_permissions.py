@@ -48,3 +48,12 @@ class IsTeacher(permissions.BasePermission):
         if request.user.is_authenticated:
             return request.user.groups.filter(name="Teacher").exists()
         return False
+
+
+class IsStudent(permissions.BasePermission):
+    "Is requesting User in Group Student??"
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            return request.user.groups.filter(name="Student").exists()
+        return False

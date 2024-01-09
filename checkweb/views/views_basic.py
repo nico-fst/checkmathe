@@ -25,13 +25,21 @@ from ..models import User, Subject, Tutoring
 
 
 def index(request):
-    are_payments_pending = Tutoring.objects.filter(
-        student=request.user, paid_status="pending"
-    ).exists()
+    if not request.user.is_authenticated:
+        return redirect("checkweb:login_view")
+    tuts_with_stud = Tutoring.objects.filter(
+        student=request.user
+    )
     
-    return render(request, "checkweb/index.html", {
-        "message": "There are pending payments: View them at History."
-    })
+    are_payments_pending = any(tut.paid_status for tut in tuts_with_stud)
+    
+    if are_payments_pending:
+        return render(
+            request,
+            "checkweb/index.html",
+            {"message": "There are pending payments: View them at History."},
+        )
+    return redirect("checkweb:history_view")
 
 
 def calc_stundenkosten(user, tut):
