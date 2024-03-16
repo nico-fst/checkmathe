@@ -9,6 +9,12 @@
 # checkmathe
 conceptual website for students to book and manage tutorings
 
+# Docker Configuration
+1. Build Image via  `docker build -t django-docker:0.0.1 .`
+2. Create, start (and rebuild) Container via `docker compose up --build`
+
+Start without rebuilding via `docker-compose up`
+
 # Installation
 
 1. Create venv: ```python3 -m venv venv```

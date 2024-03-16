@@ -1,6 +1,6 @@
-Django
-djangorestframework
-PyPDF2
-python-dotenv
-drf-yasg
-icalendar
+Django==4.2.4
+djangorestframework==3.14.0
+drf-yasg==1.21.7
+PyPDF2==3.0.1
+python-dotenv==1.0.1
+icalendar==5.0.11
