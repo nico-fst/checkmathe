@@ -1,4 +1,4 @@
-GET /api/getSubjects/
+GET /api/subject/
 Host: localhost:8000
 Content-Type: application/json
 
@@ -13,49 +13,49 @@ Content-Type: application/json
 
 ###
 
-GET /api/user_list_view/
+GET /api/user/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-GET /api/tutoring_view/17/
+GET /api/tutoring/17/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-GET /api/tutoring_view/15/
+GET /api/tutoring/15/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-GET /api/tutoring_view/999/
+GET /api/tutoring/999/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-DELETE /api/tutoring_view/19/
+DELETE /api/tutoring/19/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-DELETE /api/tutoring_view/17/
+DELETE /api/tutoring/17/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-PUT /api/tutoring_view/15/
+PUT /api/tutoring/15/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
@@ -66,7 +66,7 @@ Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-PUT /api/tutoring_view/15/
+PUT /api/tutoring/15/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
@@ -93,14 +93,14 @@ Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-GET /api/user_view/1
+GET /api/user/1
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-POST /api/user_view/
+POST /api/user/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
@@ -123,7 +123,7 @@ Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
 ###
 
-GET /api/sum_view/harry_pot/2023/12
+GET /api/sum/harry_pot/2023/12/
 Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7

@@ -12,6 +12,7 @@ env/
 
 # Medien-Uploads
 media/
+Korrektur_Template*
 
 # Datenbankdateien
 # db.sqlite3
