@@ -9,6 +9,12 @@ from django.core.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 
 class TutoringViewsTestCase(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.client = Client()
+
     def setUp(self):
         self.stud = Group.objects.get(name="Student")
         self.teach = Group.objects.get(name="Teacher")
@@ -33,7 +39,7 @@ class TutoringViewsTestCase(TestCase):
         self.subject.save()
 
         self.tut = Tutoring.objects.create(
-            date="2023-01-01",
+            date="2022-01-01",
             duration=45,
             subject=Subject.objects.create(title="TestSubject"),
             student=self.student,
@@ -43,14 +49,12 @@ class TutoringViewsTestCase(TestCase):
         self.tut.save()
 
     def test_view_illegal(self):
-        client = Client()
-        client.force_login(self.student)
+        self.client.force_login(self.student)
 
-        response = client.get(reverse)
+        response = self.client.get(reverse)
 
     def test_create_legal(self):
-        client = Client()
-        client.force_login(self.student)
+        self.client.force_login(self.student)
 
         form_data = {
             "date": "1984-01-01",
@@ -62,7 +66,7 @@ class TutoringViewsTestCase(TestCase):
         }
 
         # send POST to view
-        response = client.post(reverse("checkweb:tutoring"), data=form_data)
+        response = self.client.post(reverse("checkweb:tutoring"), data=form_data)
 
         self.assertEqual(response.status_code, 302)  # form submission successful?
         self.assertEqual(Tutoring.objects.count(), 2)  # new Tutoring object created?
@@ -77,9 +81,8 @@ class TutoringViewsTestCase(TestCase):
         self.assertEqual(new_tut.content, "Demo tutoring session Lorem ipsum.")
 
     def test_delete_illegal(self):
-        client = Client()
-        client.force_login(self.student)
-        response = client.delete(reverse("checkweb:tutoring", args=[self.tut.id]))
+        self.client.force_login(self.student)
+        response = self.client.delete(reverse("checkweb:tutoring", args=[self.tut.id]))
 
         self.assertEqual(response.status_code, 403)
         self.assertTrue(
@@ -87,9 +90,21 @@ class TutoringViewsTestCase(TestCase):
         )  # validate that not deleted
 
     def test_delete_legal(self):
-        client = Client()
-        client.force_login(self.teacher)
-        response = client.delete(reverse("checkweb:tutoring", args=[self.tut.id]))
+        self.client.force_login(self.teacher)
+        response = self.client.delete(reverse("checkweb:tutoring", args=[self.tut.id]))
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Tutoring.objects.filter(id=self.tut.id).exists())  # validate deletion
+
+    def test_paid_status(self):
+        # Case: in past => "pending"
+        self.tut.date = datetime.date.today() - datetime.timedelta(days=32)
+        self.assertEqual(self.tut.paid_status, "pending")
+
+        # Case: in current month (today) => "future"
+        self.tut.date = datetime.date.today()
+        self.assertEqual(self.tut.paid_status, "future")
+
+        # Case: paid => "paid"
+        self.tut.paid = True
+        self.assertEqual(self.tut.paid_status, "paid")
