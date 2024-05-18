@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["84.162.78.71", "www.n-stern.de"]
+ALLOWED_HOSTS = ["84.162.78.71", "www.n-stern.de", "127.0.0.1"]
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 
