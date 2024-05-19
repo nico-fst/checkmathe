@@ -20,6 +20,7 @@ from django.shortcuts import render, redirect
 
 import json
 from functools import wraps
+import os
 
 from ..models import User, Subject, Tutoring
 
@@ -73,7 +74,7 @@ def register(request):
         group = Group.objects.get(name="Student")  # default: only overwritten if valid PTC
 
         # Only register as teacher, if a valid PTC was provided
-        if ptc == "Amaru":  # TODO as private environment var
+        if ptc == os.getenv("PERSONAL_TEACHER_CODE"):
             group = Group.objects.get(name="Teacher")
         elif ptc:
             return render(request, "checkweb/register.html", {"message": "Wrong PTC given..."})

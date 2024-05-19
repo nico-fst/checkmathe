@@ -1,109 +1,132 @@
-GET /api/subject/
-Host: localhost:8000
+@BASE_URL = http://localhost:8000
+@TOKEN_TEACHER = ef49df1fb99bbfefcc094ea2957575f17f940c70
+@TEACHER = {"username": "nico_strn", "password": "123"}
+@TEACHER_NAME = nico_strn
+@TOKEN_STUDENT = 4e7ec933951ae94df47d449b00cffea61c5e9183
+@STUDENT = {"username": "demo_user", "password": "123"}
+@STUDENT_NAME = demo_user
+@TUT_ID_WITH_TEACHER_WITH_STUDENT = 1
+@TUT_ID_INVALID = 999
+@TUT_ID_WITHOUT_TEACHER_WITH_STUDENT = 2
+
+GET {{BASE_URL}}/api/subject/
+
+### get Teacher Token
+
+POST {{BASE_URL}}/api/obtain_auth_token/
 Content-Type: application/json
 
-###
+{{TEACHER}}
 
+### get Student Token
 
-POST /api/obtain_auth_token/
-Host: localhost:8000
+POST {{BASE_URL}}/api/obtain_auth_token/
 Content-Type: application/json
 
-{"username": "nico_strn", "password": "123"}
+{{STUDENT}}
 
-###
+### (Teacher) get all Users
 
-GET /api/user/
-Host: localhost:8000
+GET {{BASE_URL}}/api/user/
+Authorization: token {{TOKEN_TEACHER}}
+
+### (Teacher) get tutored Tut
+
+GET {{BASE_URL}}/api/tutoring/{{TUT_ID_WITH_TEACHER_WITH_STUDENT}}/
+Authorization: token {{TOKEN_TEACHER}}
+
+### (Teacher) get invalid Tut
+
+GET {{BASE_URL}}/api/tutoring/{{TUT_ID_INVALID}}/
+Authorization: token {{TOKEN_TEACHER}}
+
+### (Teacher) get NOT tutored Tut
+
+GET {{BASE_URL}}/api/tutoring/{{TUT_ID_WITHOUT_TEACHER_WITH_STUDENT}}/
+Authorization: token {{TOKEN_TEACHER}}
+
+### (Teacher) try deleting NOT invalidTut
+
+DELETE {{BASE_URL}}/api/tutoring/19/
 Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
-
-###
-
-GET /api/tutoring/17/
-Host: localhost:8000
-Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
-
-###
-
-GET /api/tutoring/15/
-Host: localhost:8000
-Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
-
-###
-
-GET /api/tutoring/999/
-Host: localhost:8000
-Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
-
-###
-
-DELETE /api/tutoring/19/
-Host: localhost:8000
-Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+Authorization: token {{TOKEN_TEACHER}}
 
 ###
 
 DELETE /api/tutoring/17/
-Host: localhost:8000
 Content-Type: application/json
 Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
 
-###
+### (Teacher) alter tutored Tut's content
 
-PUT /api/tutoring/15/
-Host: localhost:8000
+PUT {{BASE_URL}}/api/tutoring/{{TUT_ID_WITH_TEACHER_WITH_STUDENT}}/
 Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+Authorization: token {{TOKEN_TEACHER}}
 
 {"new_values": {
     "content": "New Content. Ananas."
 }}
 
-###
+### (Teacher) try altering NOT tutored Tut's content
 
-PUT /api/tutoring/15/
-Host: localhost:8000
+PUT {{BASE_URL}}/api/tutoring/{{TUT_ID_WITHOUT_TEACHER_WITH_STUDENT}}/
 Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+Authorization: token {{TOKEN_TEACHER}}
+
+{"new_values": {
+    "content": "New Content. Ananas."
+}}
+
+### (Teacher) alter tutored Tut's paid
+
+PUT {{BASE_URL}}/api/tutoring/{{TUT_ID_WITH_TEACHER_WITH_STUDENT}}/
+Content-Type: application/json
+Authorization: token {{TOKEN_TEACHER}}
 
 {"new_values": {
     "paid": false
 }}
 
-###
+### (Teacher) try altering NOT tutored Tut's paid
 
-POST /api/create_tutoring/
-Host: localhost:8000
+PUT {{BASE_URL}}/api/tutoring/{{TUT_ID_WITHOUT_TEACHER_WITH_STUDENT}}/
 Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+Authorization: token {{TOKEN_TEACHER}}
+
+{"new_values": {
+    "paid": false
+}}
+
+### (Teacher) create new tutored Tut TODO CSRF token
+
+POST {{BASE_URL}}/api/create_tutoring/
+Content-Type: application/json
+Authorization: token {{TOKEN_TEACHER}}
 
 {
     "yyyy-mm-dd": "2024-01-01",
     "duration_in_min": 45,
     "subject_title": "Math",
-    "teacher_username": "nico_strn",
-    "student_username": "kat_ev",
-    "content": "Sinussatz"
+    "teacher_username": "{{TEACHER_NAME}}",
+    "student_username": "{{STUDENT_NAME}}",
+    "content": "Sinussatz und trigotetc"
 }
 
-###
+### (Teacher) find other user my username
 
-GET /api/user/1
-Host: localhost:8000
+GET {{BASE_URL}}/api/user/{{STUDENT_NAME}}/
+Authorization: token {{TOKEN_TEACHER}}
+
+### (Student) try finding other user my username
+
+GET {{BASE_URL}}/api/user/{{STUDENT_NAME}}/
+Authorization: token {{TOKEN_STUDENT}}
+
+### (Teacher) create new valid user
+
+POST {{BASE_URL}}/api/user/
 Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
-
-###
-
-POST /api/user/
-Host: localhost:8000
-Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+Authorization: token {{TOKEN_TEACHER}}
 
 {
     "username": "new.user",
@@ -114,30 +137,46 @@ Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
     "phone_number": "23948798"
 }
 
-###
+### (Student) try creating new valid user
 
-DELETE /api/delete_user/new.user/
-Host: localhost:8000
+POST {{BASE_URL}}/api/user/
 Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
-
-###
-
-GET /api/sum/harry_pot/2023/12/
-Host: localhost:8000
-Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
-
-###
-
-POST /api/change_paid_per_month/
-Host: localhost:8000
-Content-Type: application/json
-Authorization: token a0f7e7c7f61c64a55ee00947c02148bfc13a9cf7
+Authorization: token {{TOKEN_STUDENT}}
 
 {
-    "student_username": "kat_ev",
+    "username": "new.user",
+    "email": "new.user@mail.de",
+    "password": "123",
+    "first_name": "new",
+    "last_name": "user",
+    "phone_number": "23948798"
+}
+
+### (Teacher) delete user by username TODO CSRF token
+
+DELETE {{BASE_URL}}/api/delete_user/new.user/
+Authorization: token {{TOKEN_TEACHER}}
+
+### (Teacher) get student's monthly overview
+
+GET {{BASE_URL}}/api/sum/{{STUDENT_NAME}}/2024/05/
+Authorization: token {{TOKEN_TEACHER}}
+
+### (Student) try getting other student's monthly overview
+
+GET {{BASE_URL}}/api/sum/new.user/2024/05/
+Authorization: token {{TOKEN_STUDENT}}
+
+
+### (Teacher) tick/untick paid status for month TODO CSRF token
+
+POST {{BASE_URL}}/api/change_paid_per_month/
+Content-Type: application/json
+Authorization: token {{TOKEN_TEACHER}}
+
+{
+    "student_username": "{{STUDENT_NAME}}",
     "year": 2024,
-    "month": 1,
-    "paid": false
+    "month": 5,
+    "paid": true
 }

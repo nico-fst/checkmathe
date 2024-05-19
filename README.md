@@ -22,12 +22,17 @@ Start without rebuilding via `docker-compose up`
 1. Create venv: ```python3 -m venv venv```
 2. Activate venv: ```source venv/bin/activate```
 3. Install dependencies: ```pip3 install -r requirements.txt```
+4. Create an .env in the project's root folder and fill it using the exact following structure:
 
-Deactivate venv: ```deactivate```
+```
+PERSONAL_TEACHER_CODE="code_when_registering_as_teacher"
+DB_NAME="name_of_your_db"
+DB_USER="name_of_db_user"
+DB_PASSWORD="password_of_db_user"
+```
 
 # Run
 
-1. In your local .env, define your Django ```SECRET_KEY```
-2. Start server: ```python manage.py runserver```
+Start server: ```python manage.py runserver```
 
 Manually test the project: ```python manage.py test```

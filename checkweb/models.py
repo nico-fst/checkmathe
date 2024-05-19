@@ -11,6 +11,8 @@ from datetime import date, datetime
 class User(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     preis_pro_45 = models.FloatField(null=True, blank=True)
+    
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'email']
 
     def __str__(self):
         return f"[{self.id}] {self.username}"

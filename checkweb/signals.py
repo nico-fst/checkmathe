@@ -87,13 +87,20 @@ def creae_demo_user_content(sender, request, user, **kwargs):
 
 @receiver(post_migrate)
 def create_groups(sender, **kwargs):
-    """Create default Groups"""
+    """Create default Groups if not existing"""
     if sender.name == "checkweb":
         # Check if the groups exist, and create them if not
         Group.objects.get_or_create(name="Student")
         Group.objects.get_or_create(name="Teacher")
         Group.objects.get_or_create(name="Developer")
 
+@receiver(post_migrate)
+def create_subjects(sender, **kwargs):
+    """Create default Subjects if not existing"""
+    if sender.name == "checkweb":
+        for sbj in {"Art", "Biology", "Chemistry", "English", "French", "German", "History", "Latin", "Math", "Physics", "Spanish", "Other"}:
+            Subject.objects.get_or_create(title=sbj)
+        
 
 @receiver(post_save, sender=User)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
