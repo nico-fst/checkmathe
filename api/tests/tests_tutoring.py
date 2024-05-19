@@ -21,7 +21,6 @@ class TutoringTestCase(TestCase):
         self.client = APIClient()
         self.subject_data = {"title": "Test Subject"}
         self.teach = Group.objects.get(name="Teacher")
-        self.url_tut_1 = reverse("api:tutoring", kwargs={"tut_id": 1})
 
         self.nico = User.objects.create_user(
             "nico.st", "nico.st@mail.de", "password", first_name="Nico", last_name="St"
@@ -51,18 +50,17 @@ class TutoringTestCase(TestCase):
         )
 
     def test_get_tutoring(self):
+        # since Tutoring IDs do weird things, manually re-grabbing the ID
+        tut_nr = Tutoring.objects.all()[0].id
+        tut_url = reverse("api:tutoring", kwargs={"tut_id": tut_nr})
+        
         # illegal since wrong token
         self.client.credentials(HTTP_AUTHORIZATION=f"Token wrongtoken")
-        resp_wrong_token = self.client.get(self.url_tut_1)
+        resp_wrong_token = self.client.get(tut_url)
 
         # legal since nico is teacher
         self.client.force_authenticate(user=self.nico)
-        resp_authorized = self.client.get(self.url_tut_1)
-        print(User.objects.get(username="nico.st").serialize())
-        print(self.url_tut_1)
-        print(Tutoring.objects.all()[0].serialize())
-        print(User.objects.all())
-        print(resp_authorized.json())
+        resp_authorized = self.client.get(tut_url)
         resp_student_username = resp_authorized.json().get("student_username")
         resp_student = User.objects.get(username=resp_student_username)
 
@@ -76,9 +74,14 @@ class TutoringTestCase(TestCase):
         self.assertEqual(resp_wrong_token.status_code, 401)
 
     def test_delete_tutoring(self):
+        # TODO in setUpClass, weil redundant
+        # since Tutoring IDs do weird things, manually re-grabbing the ID
+        tut_nr = Tutoring.objects.all()[0].id
+        tut_url = reverse("api:tutoring", kwargs={"tut_id": tut_nr})
+
         # illegal since kat is not teacher of tut
         self.client.force_authenticate(user=self.kat)
-        resp_as_student = self.client.delete(self.url_tut_1)
+        resp_as_student = self.client.delete(tut_url)
 
         # TEST as student: not deleted
         self.assertEqual(resp_as_student.status_code, 403)  # forbidden
@@ -86,39 +89,41 @@ class TutoringTestCase(TestCase):
 
         # illegal since xavier is not teacher of this tut
         self.client.force_authenticate(user=self.xavier)
-        resp_as_wrong_teacher = self.client.delete(self.url_tut_1)
+        resp_as_wrong_teacher = self.client.delete(tut_url)
 
         # TEST wrong teacher: not deleted
         self.assertEqual(resp_as_wrong_teacher.status_code, 403)  # forbidden
         self.assertEqual(Tutoring.objects.all().count(), 1)  # still 1 Tutoring
 
-    #     # legal since nico is teacher of tut
-    #     self.client.force_authenticate(user=self.nico)
-    #     resp_as_teacher = self.client.delete(self.url_tut_1)
+        # legal since nico is teacher of tut
+        self.client.force_authenticate(user=self.nico)
+        resp_as_teacher = self.client.delete(tut_url)
 
-    #     # TEST legal: deleted
-    #     print(resp_as_teacher.json())
-    #     print(">>>>>>>", Tutoring.objects.all()[0].serialize())
-    #     self.assertEqual(resp_as_teacher.status_code, 200)
-    #     self.assertEqual(Tutoring.objects.all().count(), 0)  # after deletion no Tutoring left
+        # TEST legal: deleted
+        self.assertEqual(resp_as_teacher.status_code, 200)
+        self.assertEqual(Tutoring.objects.all().count(), 0)  # after deletion no Tutoring left
 
-    # def test_put_tutoring(self):
-    #     # illegal since xavier is not teacher of this tut
-    #     self.client.force_authenticate(user=self.xavier)
-    #     resp_as_wrong_teacher = self.client.put(self.url_tut_1)
+    def test_put_tutoring(self):
+        # since Tutoring IDs do weird things, manually re-grabbing the ID
+        tut_nr = Tutoring.objects.all()[0].id
+        tut_url = reverse("api:tutoring", kwargs={"tut_id": tut_nr})
 
-    #     # TEST as wrong teacher: not put
-    #     self.assertEqual(resp_as_wrong_teacher.status_code, 403)  # forbidden
-    #     self.assertEqual(self.tut.content, "Lorem ipsum")  # Content not changed
+        # illegal since xavier is not teacher of this tut
+        self.client.force_authenticate(user=self.xavier)
+        resp_as_wrong_teacher = self.client.put(tut_url)
 
-    #     # legal since nico is teacher of this tut
-    #     self.client.force_authenticate(user=self.nico)
-    #     resp_as_own_teacher = self.client.put(
-    #         self.url_tut_1,
-    #         {"new_values": {"content": "New Content. Ananas."}},
-    #         format="json",
-    #     )
+        # TEST as wrong teacher: not put
+        self.assertEqual(resp_as_wrong_teacher.status_code, 403)  # forbidden
+        self.assertEqual(self.tut.content, "Lorem ipsum")  # Content not changed
 
-    #     # TEST as own teacher: put (changed content)
-    #     self.assertEqual(resp_as_own_teacher.status_code, 200)
-    #     self.assertEqual(Tutoring.objects.get(id=1).content, "New Content. Ananas.")
+        # legal since nico is teacher of this tut
+        self.client.force_authenticate(user=self.nico)
+        resp_as_own_teacher = self.client.put(
+            tut_url,
+            {"new_values": {"content": "New Content. Ananas."}},
+            format="json",
+        )
+
+        # TEST as own teacher: put (changed content)
+        self.assertEqual(resp_as_own_teacher.status_code, 200)
+        self.assertEqual(Tutoring.objects.get(id=tut_nr).content, "New Content. Ananas.")
