@@ -33,6 +33,10 @@ DB_PASSWORD="password_of_db_user"
 
 # Run
 
-Start server: ```python manage.py runserver```
+Start server via ```python manage.py runserver```
 
-Manually test the project: ```python manage.py test```
+
+# Debugging and Tesing
+
+- Locally execute the tests via ```python manage.py test```
+<!--TODO - Locally test the Github Workflows via *act*  -->

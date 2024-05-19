@@ -18,7 +18,7 @@ from ..serializers import SubjectSerializer
 
 class PaidPerMonthTests(TestCase):
     def setUp(self):
-        self.math = Subject.objects.create(title="Math")
+        self.math = Subject.objects.get(title="Math")
         self.teach = Group.objects.get(name="Teacher")
         self.url = reverse("api:tutoring")
 

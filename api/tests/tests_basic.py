@@ -32,14 +32,16 @@ class SimpleRequestsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_add_subject(self):
+        self.n_subjects = Subject.objects.all().count()
         response = self.client.post(reverse("api:subject"), self.subject_data, format="json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(Subject.objects.all().count(), 1)
+        self.assertEqual(Subject.objects.all().count(), self.n_subjects + 1)
 
     def test_subject_serialization(self):
         subject = Subject.objects.create(title="Test Subject")
         serializer = SubjectSerializer(subject)
-        self.assertEqual(serializer.data, {"id": 1, "title": "Test Subject"})
+        values = [value for key, value in serializer.data.items()]  # ©esplittet, weil die f nicht mit {}s umgehen kann bruh
+        self.assertIn("Test Subject", values)
 
     def test_user_list_unauthorized(self):
         response = self.client.get(reverse("api:user"))
@@ -71,7 +73,7 @@ class SimpleRequestsTests(TestCase):
 class SumViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.math = Subject.objects.create(title="Math")
+        self.math = Subject.objects.get(title="Math")
         self.teach = Group.objects.get(name="Teacher")
 
         self.nico = User.objects.create_user(

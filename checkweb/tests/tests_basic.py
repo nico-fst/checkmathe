@@ -37,7 +37,7 @@ class DB_ConsistencyTestCase(TestCase):
         self.tut = Tutoring.objects.create(
             date=timezone.now().date(),
             duration=45,
-            subject=Subject.objects.create(title="Math"),
+            subject=Subject.objects.get(title="Math"),
             student=self.thore,
             teacher=self.xavier,
             content="labore culpa reprehenderit sit officia elit voluptate sit ad sit",

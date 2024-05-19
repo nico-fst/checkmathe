@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
+import os
 
 
 class AuthenticationTestCase(TestCase):
@@ -26,7 +27,7 @@ class AuthenticationTestCase(TestCase):
                 "last_name": "User",
                 "email": "testuser@example.com",
                 "phone_number": "+123456789",
-                "personal_teacher_code": "Amaru",
+                "personal_teacher_code": os.getenv("PERSONAL_TEACHER_CODE"),
                 "password": "testpassword",
                 "confirmation": "testpassword",
             },
@@ -46,7 +47,7 @@ class AuthenticationTestCase(TestCase):
                 "last_name": "User",
                 "email": "testuser2@example.com",
                 "phone_number": "+123456789",
-                "personal_teacher_code": "Amaru",
+                "personal_teacher_code": os.getenv("PERSONAL_TEACHER_CODE"),
                 "password": "testpassword",
                 "confirmation": "invalidpassword",
             },

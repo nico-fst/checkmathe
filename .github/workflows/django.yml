@@ -1,12 +1,6 @@
 name: Django CI
 
-on:
-  push:
-    branches:
-      - '*'
-  pull_request:
-    branches:
-      - '*'
+on: [push, pull_request]
 
 jobs:
   build:
@@ -16,20 +10,44 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: [3.7, 3.8, 3.9]
+    
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          DB_NAME: DB_CHECKMATHE
+          DB_USER: postgres
+          DB_PASSWORD: allemeineentchen
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+
+    # Github + manuell gesetzte Secrets als Umgebungsvariablen
+    # excluded HOST and PORT since thay default to localhost and 5432
     - name: Set up environment variables
       run: |
         echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
-    - name: Run Tests
+        echo "DB_NAME=DB_CHECKMATHE" >> $GITHUB_ENV
+        echo "DB_USER=postgres" >> $GITHUB_ENV
+        echo "DB_PASSWORD=allemeineentchen" >> $GITHUB_ENV
+
+    - name: Apply database migrations
       run: |
-        python manage.py test
+        source venv/bin/activate
+        python manage.py migrate
+
+    - name: Run Tests
+      run: python manage.py test

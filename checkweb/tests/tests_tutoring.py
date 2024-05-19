@@ -59,7 +59,7 @@ class TutoringViewsTestCase(TestCase):
         form_data = {
             "date": "1984-01-01",
             "duration": 45,
-            "subject": self.tut.id,  # ID instead of Object!
+            "subject": self.subject.id,  # ID instead of Object!
             "teacher": self.teacher.id,
             "student": self.student.id,
             "content": "Demo tutoring session Lorem ipsum.",
