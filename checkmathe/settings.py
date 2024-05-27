@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "checkweb",
     "rest_framework",
     "drf_yasg",
+    "storages",
     "rest_framework.authtoken",
     "django.contrib.admin",
     "django.contrib.auth",
