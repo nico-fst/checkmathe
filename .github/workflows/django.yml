@@ -45,5 +45,5 @@ jobs:
         DB_PORT: ${{ secrets.DB_PORT }}
         DB_ENGINE: ${{ secrets.DB_ENGINE }}
       run: |
-        python manage.py migrate
+        python manage.py migrate --verbosity 3
         python manage.py test
