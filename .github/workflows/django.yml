@@ -15,11 +15,11 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          DB_NAME: DB_CHECKMATHE
-          DB_USER: postgres
-          DB_PASSWORD: allemeineentchen
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: github_actions
         ports:
-          - 5432:5432
+          - 5433:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
@@ -35,19 +35,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # Github + manuell gesetzte Secrets als Umgebungsvariablen
-    # excluded HOST and PORT since thay default to localhost and 5432
-    - name: Set up environment variables
+    - name: Migrate and Run Tests
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_ENGINE: ${{ secrets.DB_ENGINE }}
       run: |
-        echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
-        echo "DB_NAME=DB_CHECKMATHE" >> $GITHUB_ENV
-        echo "DB_USER=postgres" >> $GITHUB_ENV
-        echo "DB_PASSWORD=allemeineentchen" >> $GITHUB_ENV
-
-    - name: Apply database migrations
-      run: |
-        source venv/bin/activate
         python manage.py migrate
-
-    - name: Run Tests
-      run: python manage.py test
+        python manage.py test
