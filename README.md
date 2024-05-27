@@ -8,14 +8,11 @@
 ![sqlite](https://img.shields.io/badge/Sqlite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
-# checkmathe
-conceptual website for students to book and manage tutorings
+# CheckMathe.de
+A website for students and teachers of tutorings to come together and start learning with overhead converging to 0.
 
-# Docker Configuration
-1. Build Image via  `docker build -t django-docker:0.0.1 .`
-2. Create, start (and rebuild) Container via `docker compose up --build`
 
-Start without rebuilding via `docker-compose up`
+# Usage
 
 # Installation
 
@@ -25,18 +22,32 @@ Start without rebuilding via `docker-compose up`
 4. Create an .env in the project's root folder and fill it using the exact following structure:
 
 ```
-PERSONAL_TEACHER_CODE="code_when_registering_as_teacher"
-DB_NAME="name_of_your_db"
-DB_USER="name_of_db_user"
-DB_PASSWORD="password_of_db_user"
+SECRET_KEY="django_secret_key"
+
+PERSONAL_TEACHER_CODE="code_that_marks_new_user_as_teacher"
+
+DB_NAME="name_of_postgres_db"
+DB_USER="user_having_access_to_db"
+DB_PASSWORD="ens_password"
+
+ALLOWED_HOSTS="where_to_deploy_website"
+DEBUG="true_if_in_dev"
 ```
 
-# Run
+
+## Docker Configuration
+
+1. Build Image via  `docker build -t django-docker:0.0.1 .`
+2. Create, start (and rebuild) Container via `docker compose up --build`
+
+Start without rebuilding via `docker-compose up`
+
+
+## Run
 
 Start server via ```python manage.py runserver```
 
 
-# Debugging and Tesing
+# Debugging and Testing
 
 - Locally execute the tests via ```python manage.py test```
-<!--TODO - Locally test the Github Workflows via *act*  -->
