@@ -107,7 +107,7 @@ class Tutoring(models.Model):
             "subject_title": self.subject.title,
             "teacher_username": self.teacher.username,
             "student_username": self.student.username,
-            "content": self.content,
+            "content": self.content, #TODO fix pdf hard coded url concatenation
             "pdf": "http://127.0.0.1:8000/" + self.pdf.url if self.pdf else None,
             "paid": self.paid,
             "paid_status": self.paid_status,
