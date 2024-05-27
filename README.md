@@ -51,3 +51,8 @@ Start server via ```python manage.py runserver```
 # Debugging and Testing
 
 - Locally execute the tests via ```python manage.py test```
+
+# References
+
+A collection of tutorials that I found to be quite helpful:
+- [GitHub Pipeline (Postgres)](https://youtu.be/AU-mYipmtnc?feature=shared)
