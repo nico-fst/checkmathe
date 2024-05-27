@@ -21,7 +21,7 @@ class AuthenticationTestCase(TestCase):
         # Test registration with valid data
         response = client.post(
             reverse("checkweb:register"),
-            {
+            { 
                 "username": "testuser",
                 "first_name": "Test",
                 "last_name": "User",
