@@ -76,3 +76,4 @@ A collection of tutorials that I found to be quite precise:
 - [YT: GitHub Pipeline (Postgres)](https://youtu.be/AU-mYipmtnc?feature=shared)
 - [YT: Setting up S3 with Django](https://www.youtube.com/watch?v=Ko52pn1KXS0)
 - [YT: Setting up PostgreSQL with Django](https://www.youtube.com/watch?v=4VGzRYF3q-o)
+- [YT: Using Github Environments](https://www.youtube.com/watch?v=5XfgT9A9PHw)
