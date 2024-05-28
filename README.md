@@ -12,9 +12,17 @@
 A website for students and teachers of tutorings to come together and start learning with overhead converging to 0.
 
 
+# Structure
+
+The Django application requires
+- a AWS S3 server for uploaded attachments (like PDFs)
+- a PostgreSQL DB for Django, the models, etc.
+View the [documentation](TODO lol).
+
+
 # Usage
 
-## Set up
+## Setting things up
 
 ### 1 Databases
 
