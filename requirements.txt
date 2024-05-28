@@ -9,3 +9,4 @@ icalendar==5.0.11
 psycopg2-binary==2.9.9
 django-storages==1.14.3
 # uwsgi==2.0
+setuptools
