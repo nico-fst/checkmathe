@@ -1,5 +1,7 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import Group
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from ..models import User, Subject, Tutoring
 import datetime
@@ -48,9 +50,18 @@ class TutoringViewsTestCase(TestCase):
         )
         self.tut.save()
 
+        self.legal_pdf_content = b"PDF Content"
+        self.pdf = SimpleUploadedFile(
+            "aloha.pdf", self.legal_pdf_content, content_type="application/pdf"
+        )
+
+        self.non_pdf_content = b"Non-PDF Content"
+        self.non_pdf_file = ContentFile(self.non_pdf_content, name="non_pdf.txt")
+
     def test_view_illegal(self):
         self.client.force_login(self.student)
 
+        # TODO
         response = self.client.get(reverse)
 
     def test_create_legal(self):
@@ -108,3 +119,23 @@ class TutoringViewsTestCase(TestCase):
         # Case: paid => "paid"
         self.tut.paid = True
         self.assertEqual(self.tut.paid_status, "paid")
+
+    def test_pdf(self):
+        self.client.force_login(self.teacher)
+
+        form_data = {
+            "date": "1985-01-01",
+            "duration": 45,
+            "subject": self.subject.id,
+            "teacher": self.teacher.id,
+            "student": self.student.id,
+            "content": "Demo tutoring session Lorem ipsum.",
+        }
+        
+        # Check if submitting with valid PDF works
+        response = self.client.post(reverse("checkweb:tutoring"), data=form_data, files={'pdf': self.pdf})
+        self.assertEqual(response.status_code, 302)
+        
+        # prevent PDF from keeping in Storage
+        # TODO teardown class
+        Tutoring.objects.get(date="1985-01-01").delete()

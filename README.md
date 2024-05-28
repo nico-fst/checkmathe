@@ -46,7 +46,7 @@ AWS_SECRET_ACCESS_KEY="secret_access_key"
 
 ALLOWED_HOSTS="where_to_deploy_website"
 DEBUG="OPTIONAL-true_if_in_dev"
-LOCAL="OPTIONAL-true_if_working_locally_instead_of_on_s3"
+LOCAL="OPTIONAL-true_if_working_locally_with_attachments_instead_of_on_s3"
 ```
 
 
