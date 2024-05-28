@@ -1,4 +1,4 @@
-from django.db.models.signals import post_migrate, pre_delete
+from django.db.models.signals import post_migrate, pre_delete, pre_save
 from django.contrib.auth.signals import user_logged_out, user_logged_in
 from django.dispatch import receiver
 from django.contrib.auth.models import Group
@@ -100,7 +100,7 @@ def create_subjects(sender, **kwargs):
     if sender.name == "checkweb":
         for sbj in {"Art", "Biology", "Chemistry", "English", "French", "German", "History", "Latin", "Math", "Physics", "Spanish", "Other"}:
             Subject.objects.get_or_create(title=sbj)
-        
+
 
 @receiver(post_save, sender=User)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
@@ -127,3 +127,15 @@ def reset_demo_user(sender, request, user, **kwargs):
 def delete_tutoring_pdf(sender, instance, **kwargs):
     if instance.pdf:
         instance.pdf.delete(save=False)
+
+@receiver(pre_save, sender=Tutoring)
+def delete_old_pdf(sender, instance, **kwargs):
+    """Deletes old PDF when changed or removed from model"""
+    if instance.pk: # if already in DB
+        try:
+            old_instance = sender.objects.get(pk=instance.pk)
+            if old_instance.pdf:  # if \exists old PDF
+                old_instance.pdf.delete(save=False)  # delete
+        except sender.DoesNotExist:
+            # if no old found or existing
+            pass
