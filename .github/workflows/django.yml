@@ -34,6 +34,19 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Migrate and Run Tests
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_ENGINE: ${{ secrets.DB_ENGINE }}
+        PERSONAL_TEACHER_CODE: ${{ secrets.PERSONAL_TEACHER_CODE }}
+        AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
+        AWS_S3_REGION_NAME: ${{ secrets.AWS_S3_REGION_NAME }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
         python manage.py migrate --verbosity 3
         python manage.py test
