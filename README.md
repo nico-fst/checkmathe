@@ -36,7 +36,8 @@ PERSONAL_TEACHER_CODE="code_that_marks_new_user_as_teacher"
 DB_NAME="name_of_postgres_db"
 DB_USER="user_having_access_to_db"
 DB_PASSWORD="ens_password"
-DB_HOST="host_if_remote"
+DB_HOST="OPTIONAL-host_if_remote"
+DB_PORT="OPTIONAL-port_if_different"
 
 AWS_STORAGE_BUCKET_NAME="bucket_name_of_s3"
 AWS_S3_REGION_NAME="region"
@@ -44,8 +45,10 @@ AWS_ACCESS_KEY_ID="access_key"
 AWS_SECRET_ACCESS_KEY="secret_access_key"
 
 ALLOWED_HOSTS="where_to_deploy_website"
-DEBUG="true_if_in_dev"
+DEBUG="OPTIONAL-true_if_in_dev"
+LOCAL="OPTIONAL-true_if_working_locally_instead_of_on_s3"
 ```
+
 
 
 ### 3 Docker Configuration
