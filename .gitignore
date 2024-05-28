@@ -11,8 +11,8 @@ env/
 *.env
 
 # Medien-Uploads
-media/
-Korrektur_Template*
+pdfs/
+*.pdf
 
 # Datenbankdateien
 # db.sqlite3
