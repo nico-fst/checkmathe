@@ -353,12 +353,11 @@ class CreateTutoringViewTests(TestCase):
         self.assertEqual(Tutoring.objects.all().count(), 1)
 
     def test_creation_pdf(self):
-        return
         # valid without file tested above
 
         self.legal_pdf_content = b"PDF Content"
         self.pdf = SimpleUploadedFile(
-            "sample.pdf", self.legal_pdf_content, content_type="application/pdf"
+            "aloha.pdf", self.legal_pdf_content, content_type="application/pdf"
         )
 
         self.non_pdf_content = b"Non-PDF Content"
@@ -399,3 +398,6 @@ class CreateTutoringViewTests(TestCase):
         # TEST invalid file: not created
         self.assertEqual(resp_with_pdf.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Tutoring.objects.all().count(), 1)
+
+        # Prevent PDFs staying stored in filesystem
+        Tutoring.objects.get(id=Tutoring.objects.get(date="2023-01-01").id).delete()
