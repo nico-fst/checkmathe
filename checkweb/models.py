@@ -102,13 +102,13 @@ class Tutoring(models.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "yyyy-mm-dd": self.date,
+            "yyyy_mm_dd": self.date,
             "duration_in_min": self.duration,
             "subject_title": self.subject.title,
             "teacher_username": self.teacher.username,
             "student_username": self.student.username,
-            "content": self.content, #TODO fix pdf hard coded url concatenation
-            "pdf": "WAS KOMISCHES/" + self.pdf.url if self.pdf else None,
+            "content": self.content, 
+            "pdf": self.pdf.url if self.pdf else None,
             "paid": self.paid,
             "paid_status": self.paid_status,
         }

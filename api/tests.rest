@@ -104,7 +104,7 @@ Content-Type: application/json
 Authorization: token {{TOKEN_TEACHER}}
 
 {
-    "yyyy-mm-dd": "2024-01-01",
+    "yyyy_mm_dd": "2024-01-01",
     "duration_in_min": 45,
     "subject_title": "Math",
     "teacher_username": "{{TEACHER_NAME}}",

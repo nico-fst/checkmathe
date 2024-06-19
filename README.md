@@ -12,6 +12,8 @@
 # CheckMathe.de
 A website for students and teachers of tutorings to come together and start learning with overhead converging to 0.
 
+View the API docs at /swagger/.
+
 
 # Structure
 
@@ -62,10 +64,12 @@ LOCAL="OPTIONAL-true_if_working_locally_with_attachments_instead_of_on_s3"
 
 ### 3 Docker Configuration
 
-1. Build Image via  `docker build -t django-docker:0.0.1 .`
-2. Create, start (and rebuild) Container via `docker compose up --build`
+Start Postgres server.
 
-Start without rebuilding via `docker-compose up`
+1. Build App Image via  `docker build -t django-docker:0.0.1 .`
+2. Create, start (and rebuild) App Container via `docker compose up --build`
+
+Start without rebuilding via `docker-compose up`.
 
 
 ## Execution
