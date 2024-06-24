@@ -8,6 +8,7 @@ from rest_framework import serializers, status
 from checkweb.models import Subject, User, Tutoring
 from checkweb.views.views_basic import calc_stundenkosten
 
+from django.contrib.auth.models import Group
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from datetime import datetime, date
@@ -83,20 +84,35 @@ class TutoringView(APIView):
 
 class PaidPerMonthView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsTeacher]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, student_username, year, month):
         """Get all Tutorings of specific student of specific year, month
         grouped by paid status
         + if at least one is unpaid"""
-        
-        tuts = Tutoring.objects.filter(
-            teacher=request.user,
-            student__username=student_username,
-            date__year=year,
-            date__month=month,
-        )
-        
+
+        # Guard: student trying to view other tuts
+        # TODO testing
+        if (request.user.username != student_username) or not request.user.groups.filter(
+            name="Teacher"
+        ).exists():
+            return Response(
+                {"error": "You as student may not spectate other Tutorings."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if year and month:
+            tuts = Tutoring.objects.filter(
+                teacher=request.user,
+                student__username=student_username,
+                date__year=year,
+                date__month=month,
+            )
+        else:
+            tuts = Tutoring.objects.filter(
+                teacher=request.user,
+            )
+
         return Response(
             {
                 # if at least one tut should be paid in this month and is not paid yet
@@ -109,7 +125,7 @@ class PaidPerMonthView(APIView):
 
     def post(self, request):
         """Set paid status of all Tutorings of specific student of specific year, month to True/False"""
-        
+
         data = request.data
 
         # Guard: paid must be boolean
@@ -149,10 +165,11 @@ class PaidPerMonthView(APIView):
                 "message": f"Success changing paid status of Tutorings.",
                 "new": [tut.serialize() for tut in tuts],
             }
-        )   
+        )
+
 
 class TutoringsView(APIView):
-    '''returns all Tutorings of specified User'''
+    """returns all Tutorings of specified User"""
 
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
