@@ -30,7 +30,8 @@ View the [documentation](TODO lol).
 ### 1 Databases
 
 1. Set up an empty PostgreSQL DB and remember its connection data ([Starting Tutorial](https://www.youtube.com/watch?v=4VGzRYF3q-o), but with a few tweaks: TODO link Obsidian Tutorial).
-2. Set up an AWS S3 Bucket and remember its connection data ([Tutorial](https://www.youtube.com/watch?v=Ko52pn1KXS0)).
+  -  Let Container auto start via `docker update --restart always <container_name>`
+3. Set up an AWS S3 Bucket and remember its connection data ([Tutorial](https://www.youtube.com/watch?v=Ko52pn1KXS0)).
 
 ### 2 Locally
 

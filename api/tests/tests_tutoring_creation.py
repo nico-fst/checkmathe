@@ -396,7 +396,6 @@ class CreateTutoringViewTests(TestCase):
         )
 
         # TEST invalid file: not created
-        print(resp_with_pdf.json())
         self.assertEqual(resp_with_pdf.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Tutoring.objects.all().count(), 1)
 

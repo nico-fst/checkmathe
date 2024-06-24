@@ -1,7 +1,7 @@
 @BASE_URL = http://localhost:8000
-@TOKEN_TEACHER = ef49df1fb99bbfefcc094ea2957575f17f940c70
-@TEACHER = {"username": "nico_strn", "password": "123"}
-@TEACHER_NAME = nico_strn
+@TOKEN_TEACHER = e1240c69e06da3b4eb992d32d9530ce3cf8eac03
+@TEACHER = {"username": "teacher", "password": "123"}
+@TEACHER_NAME = teacher
 @TOKEN_STUDENT = 4e7ec933951ae94df47d449b00cffea61c5e9183
 @STUDENT = {"username": "demo_user", "password": "123"}
 @STUDENT_NAME = demo_user
@@ -180,3 +180,15 @@ Authorization: token {{TOKEN_TEACHER}}
     "month": 5,
     "paid": true
 }
+
+### (Teacher) get all taught tutorings
+
+GET {{BASE_URL}}/api/tutorings/{{TEACHER_NAME}}/
+Content-Type: application/json
+Authorization: token {{TOKEN_TEACHER}}
+
+### (Student) get all taken tutorings
+
+GET {{BASE_URL}}/api/tutorings/{{STUDENT_NAME}}/
+Content-Type: application/json
+Authorization: token {{TOKEN_STUDENT}}

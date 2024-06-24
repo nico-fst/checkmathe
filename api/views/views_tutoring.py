@@ -8,6 +8,7 @@ from rest_framework import serializers, status
 from checkweb.models import Subject, User, Tutoring
 from checkweb.views.views_basic import calc_stundenkosten
 
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from datetime import datetime, date
 import re
@@ -148,4 +149,17 @@ class PaidPerMonthView(APIView):
                 "message": f"Success changing paid status of Tutorings.",
                 "new": [tut.serialize() for tut in tuts],
             }
-        )
+        )   
+
+class TutoringsView(APIView):
+    '''returns all Tutorings of specified User'''
+
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FileUploadParser]
+
+    def get(self, request, username):
+        user = User.objects.get(username=username)
+        tuts = Tutoring.objects.filter(Q(teacher=user) | Q(student=user))
+
+        return Response([tut.serialize() for tut in tuts])
