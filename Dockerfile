@@ -7,6 +7,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY .env /app/.env
+ARG ENVIRONMENT=normal
+RUN if [ ${ENVIRONMENT} != "github" ]; then cp .env /app/.env; fi
 
 COPY . .

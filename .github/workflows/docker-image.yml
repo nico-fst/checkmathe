@@ -17,4 +17,5 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag django-docker:0.0.1
+    # --build-arg: unterbindet in github workflow copy .env in Dockerfile
+      run: docker build . --file Dockerfile --tag django-docker:0.0.1 --build-arg ENVIRONMENT=github
