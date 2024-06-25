@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 from rest_framework import serializers, status
 
 from checkweb.models import Subject, User, Tutoring
-from checkweb.views.views_basic import calc_stundenkosten
 
 from django.shortcuts import get_object_or_404
 from datetime import datetime, date

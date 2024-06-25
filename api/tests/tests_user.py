@@ -12,7 +12,7 @@ import os
 import json
 
 from checkweb.models import Subject, Tutoring, User
-from checkweb.views.views_basic import calc_stundenkosten
+
 from ..serializers import SubjectSerializer
 
 

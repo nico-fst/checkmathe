@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 from rest_framework import serializers, status
 
 from checkweb.models import Subject, User, Tutoring
-from checkweb.views.views_basic import calc_stundenkosten
 
 from django.shortcuts import get_object_or_404
 from datetime import datetime, date
@@ -78,7 +77,7 @@ class SumView(APIView):
 
         tuts = Tutoring.objects.filter(date__year=year, date__month=month, student=stud)
 
-        sum_money = sum(calc_stundenkosten(stud, tut) for tut in tuts)
+        sum_money = sum(tut.price for tut in tuts)
 
         return Response(
             {

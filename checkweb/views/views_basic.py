@@ -42,23 +42,6 @@ def index(request):
     return redirect("checkweb:history_view")
 
 
-def calc_stundenkosten(user, tut) -> int:
-    '''Calculate the cost of a single Tutoring for a given user.'''
-    
-    if user.preis_pro_45 is not None:
-        return round(user.preis_pro_45 * (tut.duration / 45), 2)
-    else:
-        return -9999
-
-def calc_serienkosten(user, duration: int) -> int:
-    '''Calculate the total cost of a list of Tutorings for a given user.'''
-    
-    if user.preis_pro_45 is not None:
-        return round(user.preis_pro_45 * (duration / 45), 2)
-    else:
-        return -9999
-
-
 @csrf_exempt
 @login_required
 def group_tutorings_by_month(request, student_id):
@@ -92,7 +75,7 @@ def group_tutorings_by_month(request, student_id):
                 date__month=month.month, date__year=month.year, student=request.user
             )
 
-        money_for_month = sum(calc_stundenkosten(tut.student, tut) for tut in tutorings_for_month)
+        money_for_month = sum(tut.price for tut in tutorings_for_month)
 
         # save collected data
         month_objects[month] = {

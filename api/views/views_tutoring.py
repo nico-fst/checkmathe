@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 from rest_framework import serializers, status
 
 from checkweb.models import Subject, User, Tutoring
-from checkweb.views.views_basic import calc_stundenkosten, calc_serienkosten
 
 from django.contrib.auth.models import Group
 from django.db.models import Q
@@ -97,9 +96,9 @@ class TutsPerMonthView(APIView):
                 "tuts_all": [tut.serialize() for tut in tuts_all],
                 "tuts_paid": [tut.serialize() for tut in tuts_paid],
                 "tuts_unpaid": [tut.serialize() for tut in tuts_unpaid],
-                "sum_all": calc_serienkosten(stud, sum([tut.duration for tut in tuts_all])),
-                "sum_paid": calc_serienkosten(stud, sum([tut.duration for tut in tuts_paid])),
-                "sum_unpaid": calc_serienkosten(stud, sum([tut.duration for tut in tuts_unpaid])),
+                "sum_all": sum([tut.price for tut in tuts_all]),
+                "sum_paid": sum([tut.price for tut in tuts_paid]),
+                "sum_unpaid": sum([tut.price for tut in tuts_unpaid]),
                 "is_paid": tuts_unpaid.count() == 0
             }
         )
@@ -130,6 +129,7 @@ class TutsPerMonthView(APIView):
             )
 
         # TODO daaaamn inefficient
+        # TODO testing
         # group tuts by month and aggregate infos
         for tut in tuts:
             collect_yyyy_mm[tut.date.strftime("%Y-%m")] = True
@@ -160,9 +160,9 @@ class TutsPerMonthView(APIView):
                     paid=False,
                 )
             ]
-            resp[yyyy_mm]["sum_all"] = calc_serienkosten(stud, sum([tut["duration_in_min"] for tut in resp[yyyy_mm]["tuts_all"]]))
-            resp[yyyy_mm]["sum_paid"] = calc_serienkosten(stud, sum([tut["duration_in_min"] for tut in resp[yyyy_mm]["tuts_paid"]]))
-            resp[yyyy_mm]["sum_unpaid"] = calc_serienkosten(stud, sum([tut["duration_in_min"] for tut in resp[yyyy_mm]["tuts_unpaid"]]))
+            resp[yyyy_mm]["sum_all"] = sum([tut["price"] for tut in resp[yyyy_mm]["tuts_all"]])
+            resp[yyyy_mm]["sum_paid"] = sum([tut["price"] for tut in resp[yyyy_mm]["tuts_paid"]])
+            resp[yyyy_mm]["sum_unpaid"] = sum([tut["price"] for tut in resp[yyyy_mm]["tuts_unpaid"]])
             resp[yyyy_mm]["is_paid"] = resp[yyyy_mm]["sum_unpaid"] == 0
 
         return Response(resp, status=status.HTTP_200_OK)
