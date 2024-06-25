@@ -127,12 +127,3 @@ class TutoringTestCase(TestCase):
         # TEST as own teacher: put (changed content)
         self.assertEqual(resp_as_own_teacher.status_code, 200)
         self.assertEqual(Tutoring.objects.get(id=tut_nr).content, "New Content. Ananas.")
-
-    def test_get_tutorings(self):
-        self.client.force_authenticate(user=self.kat)
-
-        student_url = reverse("api:tutorings", kwargs={"username": "kat.ev"})
-        student_resp = self.client.get(student_url)
-        
-        self.assertEqual(student_resp.status_code, 200)
-        self.assertEqual(student_resp.json()[0]["content"], "Lorem ipsum")

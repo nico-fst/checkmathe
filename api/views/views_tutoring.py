@@ -82,6 +82,8 @@ class TutoringView(APIView):
         )
 
 class TutsPerMonthView(APIView):
+    '''GET: returns all Tutorings of student_username grouped by month if provided (else all)'''
+    
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
@@ -165,44 +167,7 @@ class TutsPerMonthView(APIView):
 
         return Response(resp, status=status.HTTP_200_OK)
 
-
-class PaidPerMonthView(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, student_username, year=None, month=None):
-        """Get all Tutorings of specific student of specific year, month
-        grouped by paid status
-        + if at least one is unpaid"""
-
-        # Guard: student trying to view other tuts
-        # TODO testing
-        if (request.user.username != student_username) and not request.user.groups.filter(
-            name="Teacher"
-        ).exists():
-            return Response(
-                {"error": "You as student may not spectate other Tutorings."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        tuts = Tutoring.objects.filter(
-            teacher=request.user,
-            student__username=student_username,
-            date__year=year,
-            date__month=month,
-        )
-
-        return Response(
-            {
-                # if at least one tut should be paid in this month and is not paid yet
-                "all_paid": not any(not tut.paid for tut in tuts),
-                "paid_tuts": [tut.serialize() for tut in tuts if tut.paid],
-                "unpaid_tuts": [tut.serialize() for tut in tuts if not tut.paid],
-            },
-            status=status.HTTP_200_OK,
-        )
-
-    def post(self, request):
+    def post(self, request, student_username):
         """Set paid status of all Tutorings of specific student of specific year, month to True/False"""
 
         data = request.data
@@ -222,7 +187,7 @@ class PaidPerMonthView(APIView):
             )
 
         # Guard: student_username must be valid
-        if not User.objects.filter(username=data.get("student_username")).exists():
+        if not User.objects.filter(username=student_username).exists():
             return Response(
                 {"error": "student_username must be valid"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -230,7 +195,7 @@ class PaidPerMonthView(APIView):
 
         tuts = Tutoring.objects.filter(
             teacher=request.user,
-            student__username=data.get("student_username"),
+            student__username=student_username,
             date__year=data.get("year"),
             date__month=data.get("month"),
         )
@@ -246,16 +211,3 @@ class PaidPerMonthView(APIView):
             }
         )
 
-
-class TutoringsView(APIView):
-    """returns all Tutorings of specified User"""
-
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [JSONParser, MultiPartParser, FileUploadParser]
-
-    def get(self, request, username):
-        user = User.objects.get(username=username)
-        tuts = Tutoring.objects.filter(Q(teacher=user) | Q(student=user))
-
-        return Response([tut.serialize() for tut in tuts])

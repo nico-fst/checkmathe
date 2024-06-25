@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
-from django.urls import reverse
+from django.urls import reverse, NoReverseMatch
 from django.utils import timezone
 
 import os
@@ -38,6 +38,7 @@ class PaidPerMonthTests(TestCase):
             "password",
             first_name="Katniss",
             last_name="Everdeen",
+            preis_pro_45=45
         )
 
         self.tutoring_nico1 = Tutoring.objects.create(
@@ -83,8 +84,8 @@ class PaidPerMonthTests(TestCase):
 
     def test_post_paid(self):
         resp_paid_missing = self.client.post(
-            reverse("api:paid_per_month"),
-            {"student_username": "kat.ev", "year": 2022, "month": 1},
+            reverse("api:tuts_per_month", kwargs={"student_username": "kat.ev"}),
+            {"year": 2022, "month": 1},
             format="json",
         )
 
@@ -96,8 +97,8 @@ class PaidPerMonthTests(TestCase):
         self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)
 
         resp_paid_invalid = self.client.post(
-            reverse("api:paid_per_month"),
-            {"student_username": "kat.ev", "year": 2022, "month": 1, "paid": "INVALID"},
+            reverse("api:tuts_per_month", kwargs={"student_username": "kat.ev"}),
+            {"year": 2022, "month": 1, "paid": "INVALID"},
             format="json",
         )
 
@@ -109,8 +110,8 @@ class PaidPerMonthTests(TestCase):
         self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)
 
         resp_paid_true = self.client.post(
-            reverse("api:paid_per_month"),
-            {"student_username": "kat.ev", "year": 2022, "month": 1, "paid": True},
+            reverse("api:tuts_per_month", kwargs={"student_username": "kat.ev"}),
+            {"year": 2022, "month": 1, "paid": True},
             format="json",
         )
 
@@ -122,27 +123,27 @@ class PaidPerMonthTests(TestCase):
         self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)
 
     def test_post_student_username(self):
-        resp_username_missing = self.client.post(
-            reverse("api:paid_per_month"),
-            {"year": 2022, "month": 1, "paid": True},
-            format="json",
-        )
+        with self.assertRaises(NoReverseMatch):
+            resp_username_missing = self.client.post(
+                reverse("api:tuts_per_month", kwargs={"student_username": ""}),
+                {"year": 2022, "month": 1, "paid": True},
+                format="json",
+            )
 
         # TEST username missing: not changed
-        self.assertEqual(resp_username_missing.status_code, status.HTTP_400_BAD_REQUEST)
         tuts_nico = Tutoring.objects.filter(teacher=self.nico)
         for tut in tuts_nico:
             self.assertEqual(tut.paid, False)
         self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)
 
-        resp_username_not_existing = self.client.post(
-            reverse("api:paid_per_month"),
-            {"NOTEXISTING": "kat.ev", "year": 2022, "month": 1, "paid": False},
-            format="json",
-        )
+        with self.assertRaises(NoReverseMatch):
+            resp_username_not_existing = self.client.post(
+                reverse("api:tuts_per_month", kwargs={"NOTEXISTING": "kat.ev"}),
+                {"year": 2022, "month": 1, "paid": False},
+                format="json",
+            )
 
         # TEST username not existing: not changed
-        self.assertEqual(resp_username_not_existing.status_code, status.HTTP_400_BAD_REQUEST)
         tuts_nico = Tutoring.objects.filter(teacher=self.nico)
         for tut in tuts_nico:
             self.assertEqual(tut.paid, False)
@@ -150,8 +151,8 @@ class PaidPerMonthTests(TestCase):
 
     def test_post_year_month(self):
         resp_year_missing = self.client.post(
-            reverse("api:paid_per_month"),
-            {"student_username": "kat.ev", "month": 1, "paid": True},
+            reverse("api:tuts_per_month", kwargs={"student_username": "kat.ev"}),
+            {"month": 1, "paid": True},
             format="json",
         )
 
@@ -163,8 +164,8 @@ class PaidPerMonthTests(TestCase):
         self.assertEqual(Tutoring.objects.get(teacher=self.xavier).paid, False)
 
         resp_month_missing = self.client.post(
-            reverse("api:paid_per_month"),
-            {"student_username": "kat.ev", "year": 2023, "paid": True},
+            reverse("api:tuts_per_month", kwargs={"student_username": "kat.ev"}),
+            {"year": 2023, "paid": True},
             format="json",
         )
 
@@ -178,7 +179,7 @@ class PaidPerMonthTests(TestCase):
     def test_get(self):
         resp_all_unpaid = self.client.get(
             reverse(
-                "api:paid_per_month",
+                "api:tuts_per_month",
                 kwargs={
                     "student_username": "kat.ev",
                     "year": 2022,
@@ -189,9 +190,9 @@ class PaidPerMonthTests(TestCase):
 
         # TEST all unpaid
         self.assertEqual(resp_all_unpaid.status_code, status.HTTP_200_OK)
-        self.assertEqual(resp_all_unpaid.json().get("all_paid"), False)
-        self.assertEqual(resp_all_unpaid.json().get("paid_tuts"), [])
-        self.assertEqual(len(resp_all_unpaid.json().get("unpaid_tuts")), 2)
+        self.assertEqual(resp_all_unpaid.json().get("is_paid"), False)
+        self.assertEqual(resp_all_unpaid.json().get("tuts_paid"), [])
+        self.assertEqual(len(resp_all_unpaid.json().get("tuts_unpaid")), 3)
 
         # Now one of the two Tutorings is paid
         self.tutoring_nico1.paid = True
@@ -199,7 +200,7 @@ class PaidPerMonthTests(TestCase):
 
         resp_one_paid = self.client.get(
             reverse(
-                "api:paid_per_month",
+                "api:tuts_per_month",
                 kwargs={
                     "student_username": "kat.ev",
                     "year": 2022,
@@ -210,9 +211,9 @@ class PaidPerMonthTests(TestCase):
 
         # TEST one unpaid
         self.assertEqual(resp_one_paid.status_code, status.HTTP_200_OK)
-        self.assertEqual(resp_one_paid.json().get("all_paid"), False)
-        self.assertEqual(len(resp_one_paid.json().get("paid_tuts")), 1)
-        self.assertEqual(len(resp_one_paid.json().get("unpaid_tuts")), 1)
+        self.assertEqual(resp_one_paid.json().get("is_paid"), False)
+        self.assertEqual(len(resp_one_paid.json().get("tuts_paid")), 1)
+        self.assertEqual(len(resp_one_paid.json().get("tuts_unpaid")), 2)
 
         # Now both of the two Tutorings are paid
         self.tutoring_nico2.paid = True
@@ -220,7 +221,7 @@ class PaidPerMonthTests(TestCase):
 
         resp_all_paid = self.client.get(
             reverse(
-                "api:paid_per_month",
+                "api:tuts_per_month",
                 kwargs={
                     "student_username": "kat.ev",
                     "year": 2022,
@@ -231,6 +232,6 @@ class PaidPerMonthTests(TestCase):
         
         # TEST all paid
         self.assertEqual(resp_all_paid.status_code, status.HTTP_200_OK)
-        self.assertEqual(resp_all_paid.json().get("all_paid"), True)
-        self.assertEqual(len(resp_all_paid.json().get("paid_tuts")), 2)
-        self.assertEqual(len(resp_all_paid.json().get("unpaid_tuts")), 0)
+        self.assertEqual(resp_all_paid.json().get("is_paid"), False)
+        self.assertEqual(len(resp_all_paid.json().get("tuts_paid")), 2)
+        self.assertEqual(len(resp_all_paid.json().get("tuts_unpaid")), 1)

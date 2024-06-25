@@ -170,28 +170,15 @@ Authorization: token {{TOKEN_STUDENT}}
 
 ### (Teacher) tick/untick paid status for month TODO CSRF token
 
-POST {{BASE_URL}}/api/change_paid_per_month/
+POST {{BASE_URL}}/api/tuts_per_month/{{STUDENT_NAME}}/
 Content-Type: application/json
 Authorization: token {{TOKEN_TEACHER}}
 
 {
-    "student_username": "{{STUDENT_NAME}}",
     "year": 2024,
     "month": 5,
-    "paid": true
+    "paid": false
 }
-
-### (Teacher) get all taught tutorings
-
-GET {{BASE_URL}}/api/tutorings/{{TEACHER_NAME}}/
-Content-Type: application/json
-Authorization: token {{TOKEN_TEACHER}}
-
-### (Student) get all taken tutorings
-
-GET {{BASE_URL}}/api/tutorings/{{STUDENT_NAME}}/
-Content-Type: application/json
-Authorization: token {{TOKEN_STUDENT}}
 
 ### (Student) get all participated tuts ANYTIME
 
