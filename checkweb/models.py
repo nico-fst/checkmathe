@@ -73,6 +73,12 @@ class Tutoring(models.Model):
         if self.date.year == timezone.now().year and self.date.month == timezone.now().month:
             return "future"
         return "pending"
+    
+    @property
+    def price(self) -> int:
+        if self.student.preis_pro_45 is None:
+            return -9999
+        return round(self.student.preis_pro_45 * (self.duration / 45), 2)
 
     def __str__(self):
         return f"[{self.id}] ({self.date}) {self.student} by {self.teacher} [{self.subject}]"
@@ -111,4 +117,5 @@ class Tutoring(models.Model):
             "pdf": self.pdf.url if self.pdf else None,
             "paid": self.paid,
             "paid_status": self.paid_status,
+            "price": self.price
         }

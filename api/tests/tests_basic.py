@@ -12,7 +12,6 @@ import os
 import json
 
 from checkweb.models import Subject, Tutoring, User
-from checkweb.views.views_basic import calc_stundenkosten
 from ..serializers import SubjectSerializer
 
 
@@ -120,9 +119,7 @@ class SumViewTests(TestCase):
         # TEST 200 if prop exists
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        expected_sum = calc_stundenkosten(self.kat, tutoring1) + calc_stundenkosten(
-            self.kat, tutoring2
-        )
+        expected_sum = tutoring1.price + tutoring2.price
         expected_data = {
             "sum": expected_sum,
             "count_tutorings": 2,
