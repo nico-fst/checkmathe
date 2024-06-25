@@ -15,7 +15,7 @@ from checkweb.models import Subject, Tutoring, User
 from ..serializers import SubjectSerializer
 
 
-class PaidPerMonthTests(TestCase):
+class TutsPerMonthTests(TestCase):
     def setUp(self):
         self.math = Subject.objects.get(title="Math")
         self.teach = Group.objects.get(name="Teacher")

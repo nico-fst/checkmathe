@@ -11,7 +11,6 @@ urlpatterns = [
     path("tutoring/<int:tut_id>/", views_tutoring.TutoringView.as_view(), name="tutoring"),
     path("user/", views_user.UserView.as_view(), name="user"),
     path("user/<str:username>/", views_user.UserView.as_view(), name="user"),
-    path("sum/<str:stud_username>/<int:year>/<int:month>/", views_basic.SumView.as_view(), name="sum"),
     path("tuts_per_month/<str:student_username>/", views_tutoring.TutsPerMonthView.as_view(), name="tuts_per_month"),
     path("tuts_per_month/<str:student_username>/<str:year>/<str:month>/", views_tutoring.TutsPerMonthView.as_view(), name="tuts_per_month"),
     # path("book", views_book.BookView.as_view(), name="book"),

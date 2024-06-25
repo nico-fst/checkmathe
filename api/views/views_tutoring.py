@@ -82,7 +82,7 @@ class TutoringView(APIView):
 
 class TutsPerMonthView(APIView):
     '''GET: returns all Tutorings of student_username grouped by month if provided (else all)'''
-    
+
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
@@ -104,7 +104,14 @@ class TutsPerMonthView(APIView):
         )
 
     def get(self, request, student_username, year=None, month=None):
-        '''get tuts of student_username grouped by month'''
+        """returns Tutorings, the number of Tutorings and the sum of money to pay for the provided month
+
+        Args:
+            ...
+            stud_username (str)
+            OPT year: (int)
+            OPT month (int)
+        """
 
         # Guard: block if student tries to view other tuts
         if (not request.user.groups.filter(name="Teacher").exists()):
@@ -118,7 +125,14 @@ class TutsPerMonthView(APIView):
         tuts = Tutoring.objects.filter(student=stud)
         collect_yyyy_mm = {}
         resp = {}
-        
+
+        # Guard: preis_pro_45 not set
+        if not stud.preis_pro_45:
+            return Response(
+                {"error": "Set your price per 45 minutes in your profile."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         # if specific month or broken request
         if year and month:
             return self.specific_month(request, stud, year, month)
@@ -210,4 +224,3 @@ class TutsPerMonthView(APIView):
                 "new": [tut.serialize() for tut in tuts],
             }
         )
-
