@@ -192,3 +192,21 @@ Authorization: token {{TOKEN_TEACHER}}
 GET {{BASE_URL}}/api/tutorings/{{STUDENT_NAME}}/
 Content-Type: application/json
 Authorization: token {{TOKEN_STUDENT}}
+
+### (Student) get all participated tuts ANYTIME
+
+GET {{BASE_URL}}/api/tuts_per_month/{{STUDENT_NAME}}/
+Content-Type: application/json
+Authorization: token {{TOKEN_STUDENT}}
+
+### (Student) get all participated tuts OF SPECIFIC MONTH
+
+GET {{BASE_URL}}/api/tuts_per_month/{{STUDENT_NAME}}/2024/06/
+Content-Type: application/json
+Authorization: token {{TOKEN_STUDENT}}
+
+### (Teacher) get all tutored tuts
+
+GET {{BASE_URL}}/api/tuts_per_month/{{STUDENT_NAME}}/
+Content-Type: application/json
+Authorization: token {{TOKEN_TEACHER}}

@@ -42,9 +42,19 @@ def index(request):
     return redirect("checkweb:history_view")
 
 
-def calc_stundenkosten(user, tut):
+def calc_stundenkosten(user, tut) -> int:
+    '''Calculate the cost of a single Tutoring for a given user.'''
+    
     if user.preis_pro_45 is not None:
         return round(user.preis_pro_45 * (tut.duration / 45), 2)
+    else:
+        return -9999
+
+def calc_serienkosten(user, duration: int) -> int:
+    '''Calculate the total cost of a list of Tutorings for a given user.'''
+    
+    if user.preis_pro_45 is not None:
+        return round(user.preis_pro_45 * (duration / 45), 2)
     else:
         return -9999
 

@@ -15,6 +15,8 @@ urlpatterns = [
     path("sum/<str:stud_username>/<int:year>/<int:month>/", views_basic.SumView.as_view(), name="sum"),
     path("paid_per_month/", views_tutoring.PaidPerMonthView.as_view(), name="paid_per_month"),
     path("paid_per_month/<str:student_username>/<int:year>/<int:month>/", views_tutoring.PaidPerMonthView.as_view(), name="paid_per_month"),
+    path("tuts_per_month/<str:student_username>/", views_tutoring.TutsPerMonthView.as_view(), name="tuts_per_month"),
+    path("tuts_per_month/<str:student_username>/<str:year>/<str:month>/", views_tutoring.TutsPerMonthView.as_view(), name="tuts_per_month"),
     # path("book", views_book.BookView.as_view(), name="book"),
 ]
 

@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework import serializers, status
 
 from checkweb.models import Subject, User, Tutoring
-from checkweb.views.views_basic import calc_stundenkosten
+from checkweb.views.views_basic import calc_stundenkosten, calc_serienkosten
 
 from django.contrib.auth.models import Group
 from django.db.models import Q
@@ -81,19 +81,103 @@ class TutoringView(APIView):
             }
         )
 
+class TutsPerMonthView(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def specific_month(self, request, stud: object, year, month):
+        tuts_all = Tutoring.objects.filter(student=stud, date__year=year, date__month=month)
+        tuts_paid = Tutoring.objects.filter(student=stud, paid=True, date__year=year, date__month=month)
+        tuts_unpaid = Tutoring.objects.filter(student=stud, paid=False, date__year=year, date__month=month)
+
+        return Response(
+            {
+                "tuts_all": [tut.serialize() for tut in tuts_all],
+                "tuts_paid": [tut.serialize() for tut in tuts_paid],
+                "tuts_unpaid": [tut.serialize() for tut in tuts_unpaid],
+                "sum_all": calc_serienkosten(stud, sum([tut.duration for tut in tuts_all])),
+                "sum_paid": calc_serienkosten(stud, sum([tut.duration for tut in tuts_paid])),
+                "sum_unpaid": calc_serienkosten(stud, sum([tut.duration for tut in tuts_unpaid])),
+                "is_paid": tuts_unpaid.count() == 0
+            }
+        )
+
+    def get(self, request, student_username, year=None, month=None):
+        '''get tuts of student_username grouped by month'''
+
+        # Guard: block if student tries to view other tuts
+        if (not request.user.groups.filter(name="Teacher").exists()):
+            if request.user.username != student_username:
+                return Response(
+                    {"error": "You as student may not spectate other Tutorings."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        stud = User.objects.get(username=student_username)
+        tuts = Tutoring.objects.filter(student=stud)
+        collect_yyyy_mm = {}
+        resp = {}
+        
+        # if specific month or broken request
+        if year and month:
+            return self.specific_month(request, stud, year, month)
+        elif (not year and month) or (year and not month):
+            return Response(
+                {"error": "Provide year and month both or none of them."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # TODO daaaamn inefficient
+        # group tuts by month and aggregate infos
+        for tut in tuts:
+            collect_yyyy_mm[tut.date.strftime("%Y-%m")] = True
+        for yyyy_mm, tut in collect_yyyy_mm.items():
+            resp[yyyy_mm] = {}
+            resp[yyyy_mm]["tuts_all"] = [tut.serialize()
+                for tut in Tutoring.objects.filter(
+                    student=stud,
+                    date__year=yyyy_mm[:4],
+                    date__month=yyyy_mm[5:7],
+                )
+            ]
+            resp[yyyy_mm]["tuts_paid"] = [
+                tut.serialize()
+                for tut in Tutoring.objects.filter(
+                    student=stud,
+                    date__year=yyyy_mm[:4],
+                    date__month=yyyy_mm[5:7],
+                    paid=True,
+                )
+            ]
+            resp[yyyy_mm]["tuts_unpaid"] = [
+                tut.serialize()
+                for tut in Tutoring.objects.filter(
+                    student=stud,
+                    date__year=yyyy_mm[:4],
+                    date__month=yyyy_mm[5:7],
+                    paid=False,
+                )
+            ]
+            resp[yyyy_mm]["sum_all"] = calc_serienkosten(stud, sum([tut["duration_in_min"] for tut in resp[yyyy_mm]["tuts_all"]]))
+            resp[yyyy_mm]["sum_paid"] = calc_serienkosten(stud, sum([tut["duration_in_min"] for tut in resp[yyyy_mm]["tuts_paid"]]))
+            resp[yyyy_mm]["sum_unpaid"] = calc_serienkosten(stud, sum([tut["duration_in_min"] for tut in resp[yyyy_mm]["tuts_unpaid"]]))
+            resp[yyyy_mm]["is_paid"] = resp[yyyy_mm]["sum_unpaid"] == 0
+
+        return Response(resp, status=status.HTTP_200_OK)
+
 
 class PaidPerMonthView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, student_username, year, month):
+    def get(self, request, student_username, year=None, month=None):
         """Get all Tutorings of specific student of specific year, month
         grouped by paid status
         + if at least one is unpaid"""
 
         # Guard: student trying to view other tuts
         # TODO testing
-        if (request.user.username != student_username) or not request.user.groups.filter(
+        if (request.user.username != student_username) and not request.user.groups.filter(
             name="Teacher"
         ).exists():
             return Response(
@@ -101,17 +185,12 @@ class PaidPerMonthView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        if year and month:
-            tuts = Tutoring.objects.filter(
-                teacher=request.user,
-                student__username=student_username,
-                date__year=year,
-                date__month=month,
-            )
-        else:
-            tuts = Tutoring.objects.filter(
-                teacher=request.user,
-            )
+        tuts = Tutoring.objects.filter(
+            teacher=request.user,
+            student__username=student_username,
+            date__year=year,
+            date__month=month,
+        )
 
         return Response(
             {
