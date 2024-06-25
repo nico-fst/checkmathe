@@ -69,7 +69,7 @@ class SimpleRequestsTests(TestCase):
         self.assertEqual(resp_usernames_wrong_token.status_code, 401)
 
 
-class SumViewTests(TestCase):
+class TutsPerMonthViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.math = Subject.objects.get(title="Math")
@@ -107,27 +107,20 @@ class SumViewTests(TestCase):
         )
 
         self.client.force_authenticate(user=self.nico)
-        response = self.client.get(reverse("api:sum", args=("kat.ev", 2022, 1)))
+        response = self.client.get(reverse("api:tuts_per_month", args=("kat.ev", 2022, 1)))
 
         # TEST 404 if prop preis_pro_45 empty
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         self.kat.preis_pro_45 = 15
         self.kat.save()
-        response = self.client.get(reverse("api:sum", args=("kat.ev", 2022, 1)))
+        response = self.client.get(reverse("api:tuts_per_month", args=("kat.ev", 2022, 1)))
 
         # TEST 200 if prop exists
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        expected_sum = tutoring1.price + tutoring2.price
-        expected_data = {
-            "sum": expected_sum,
-            "count_tutorings": 2,
-            "tutorings": [tutoring1.serialize(), tutoring2.serialize()],
-        }
-
-        self.assertEqual(expected_sum, response.data.get("sum"))
-        self.assertEqual(2, response.data.get("count_tutorings"))
+        self.assertEqual(tutoring1.price + tutoring2.price, response.data.get("sum_all"))
+        self.assertEqual(2, len(response.data.get("tuts_all")))
 
     def test_sum_authenticated_student(self):
         self.client.force_authenticate(user=self.kat)
@@ -136,13 +129,13 @@ class SumViewTests(TestCase):
         self.kat.save()
 
         # legal as participating student
-        response = self.client.get(reverse("api:sum", args=("kat.ev", 2022, 1)))
+        response = self.client.get(reverse("api:tuts_per_month", args=("kat.ev", 2022, 1)))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # illegal as not participating student
-        response = self.client.get(reverse("api:sum", args=("nico.st", 2022, 1)))
+        response = self.client.get(reverse("api:tuts_per_month", args=("nico.st", 2022, 1)))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_sum_unauthenticated(self):
-        response = self.client.get(reverse("api:sum", args=("kat.ev", 2022, 1)))
+        response = self.client.get(reverse("api:tuts_per_month", args=("kat.ev", 2022, 1)))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

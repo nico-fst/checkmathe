@@ -159,14 +159,8 @@ Authorization: token {{TOKEN_TEACHER}}
 
 ### (Teacher) get student's monthly overview
 
-GET {{BASE_URL}}/api/sum/{{STUDENT_NAME}}/2024/05/
+GET {{BASE_URL}}/api/tuts_per_month/{{STUDENT_NAME}}/2024/05/
 Authorization: token {{TOKEN_TEACHER}}
-
-### (Student) try getting other student's monthly overview
-
-GET {{BASE_URL}}/api/sum/new.user/2024/05/
-Authorization: token {{TOKEN_STUDENT}}
-
 
 ### (Teacher) tick/untick paid status for month TODO CSRF token
 
