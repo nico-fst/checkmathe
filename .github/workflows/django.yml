@@ -25,10 +25,6 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: 3.x
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
     - name: Migrate and Run Tests
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
@@ -71,10 +67,6 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
     - name: Migrate and Run Tests
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
