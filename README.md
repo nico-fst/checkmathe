@@ -23,9 +23,18 @@ The Django application requires
 View the [documentation](TODO lol).
 
 
-# Usage
+# Setting up
 
-## Setting things up
+## A: As Docker Container
+
+(Start external Postgres server.)
+
+1. Build App Image via  `docker build -t django-docker:0.0.1 .`
+2. Create, start (and rebuild) App Container via `docker compose up --build`
+
+Start without rebuilding via `docker-compose up`.
+
+## B: Locally
 
 ### 1 Databases
 
@@ -62,27 +71,12 @@ LOCAL="OPTIONAL-true_if_working_locally_with_attachments_instead_of_on_s3"
 ```
 
 
-
-### 3 Docker Configuration
-
-Start Postgres server.
-
-1. Build App Image via  `docker build -t django-docker:0.0.1 .`
-2. Create, start (and rebuild) App Container via `docker compose up --build`
-
-Start without rebuilding via `docker-compose up`.
-
-
 ## Execution
 
-### Run in Development
-
-Start server via ```python manage.py runserver```
-
-
-### Debugging and Testing
-
+- Start server via ```python manage.py runserver```
 - Locally execute the tests via ```python manage.py test```
+
+---
 
 # References
 
