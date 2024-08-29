@@ -3,7 +3,7 @@ name: Django CI
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-
+  # LOCAL=False: Using sqlite3 and root/
   LOCAL:
     runs-on: ubuntu-latest
     environment: LOCAL
@@ -23,12 +23,14 @@ jobs:
     - name: Migrate
       uses: docker://docker/compose:latest
       with:
+        # -T: Disable pseudo-tty allocation, sonst error
         args: exec -T django python manage.py migrate --verbosity 3
     - name: Run Tests
       uses: docker://docker/compose:latest
       with:
         args: exec -T django python manage.py test
 
+  # LOCAL=False: Using postgres and AWS S3
   DEV:
     needs: LOCAL
     strategy:
@@ -42,6 +44,7 @@ jobs:
       PERSONAL_TEACHER_CODE: ${{ secrets.PERSONAL_TEACHER_CODE }}
       LOCAL: ${{ secrets.LOCAL }}
 
+      # All values have to be provided by GitHub Secrets!
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
