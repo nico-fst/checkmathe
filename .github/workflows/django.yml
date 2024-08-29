@@ -65,7 +65,7 @@ jobs:
     - name: DEBUG pg running?
       uses: docker://docker/compose:latest
       with:
-        args: exec -T db psql -U $DB_USER -d $DB_NAME
+        args: exec -T db psql -U postgres -d testremote
     - name: Migrate
       uses: docker://docker/compose:latest
       with:
