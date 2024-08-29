@@ -9,12 +9,6 @@ jobs:
     environment: LOCAL
     env:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      DB_NAME: ${{ secrets.DB_NAME }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      DB_ENGINE: ${{ secrets.DB_ENGINE }}
       PERSONAL_TEACHER_CODE: ${{ secrets.PERSONAL_TEACHER_CODE }}
       LOCAL: ${{ secrets.LOCAL }}
     
