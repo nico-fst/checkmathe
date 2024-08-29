@@ -25,7 +25,7 @@ jobs:
     - name: Run docker-compose
       uses: docker://docker/compose:latest
       with:
-        args: up -f docker-compose.workflow.yml --build -d
+        args: up --build -d
     # - name: Migrate and Run Tests
     #   run: |
     #     python manage.py migrate --verbosity 3
