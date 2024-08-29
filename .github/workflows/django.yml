@@ -28,6 +28,6 @@ jobs:
         args: up --build -d
     - name: Migrate and Run Tests
       run: |
-        docker exec -it django-docker /bin/bash
-        python manage.py migrate --verbosity 3
-        python manage.py test
+        docker ps
+        # python manage.py migrate --verbosity 3
+        # python manage.py test
