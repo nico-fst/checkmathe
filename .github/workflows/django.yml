@@ -45,9 +45,6 @@ jobs:
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      DB_ENGINE: ${{ secrets.DB_ENGINE }}
 
       AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
       AWS_S3_REGION_NAME: ${{ secrets.AWS_S3_REGION_NAME }}
@@ -65,11 +62,11 @@ jobs:
     - name: DEBUG django venvs
       uses: docker://docker/compose:latest
       with:
-        args: exec django env
+        args: exec -T django env
     - name: DEBUG db venvs
       uses: docker://docker/compose:latest
       with:
-        args: exec db env
+        args: exec -T db env
     - name: Migrate
       uses: docker://docker/compose:latest
       with:
