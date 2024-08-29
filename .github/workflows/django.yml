@@ -62,14 +62,10 @@ jobs:
       uses: docker://docker/compose:latest
       with:
         args: up --build -d
-    - name: DEBUG django venvs
+    - name: DEBUG pg running?
       uses: docker://docker/compose:latest
       with:
-        args: exec -T django env
-    - name: DEBUG db venvs
-      uses: docker://docker/compose:latest
-      with:
-        args: exec -T db env
+        args: exec -T django psql -U $DB_USER -d $DB_NAME
     - name: Migrate
       uses: docker://docker/compose:latest
       with:
