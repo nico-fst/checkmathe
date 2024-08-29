@@ -1,12 +1,20 @@
 version: '3'
 
 services:
-  django:
-    # eigenes mit Dockerfile wegen build . gebaut
-    image: django-docker:0.0.1
-    build: .
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     ports:
-      - 8000:8000
+      - "5432:5432"
+
+  django:
+    depends_on:
+      - db
     environment:
       SECRET_KEY: ${SECRET_KEY}
       DB_NAME: ${DB_NAME}
@@ -21,20 +29,12 @@ services:
       AWS_S3_REGION_NAME: ${AWS_S3_REGION_NAME}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-    depends_on:
-      - db
-    command: python manage.py runserver 0.0.0.0:8000
-
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+    # eigenes mit Dockerfile wegen build . gebaut
+    image: django-docker:0.0.1
+    build: .
     ports:
-      - "5432:5432"
+      - 8000:8000
+    command: python manage.py runserver 0.0.0.0:8000
 
 volumes:
   pgdata:
