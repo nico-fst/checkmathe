@@ -19,9 +19,9 @@ jobs:
       LOCAL: ${{ secrets.LOCAL }}
     
     steps:
-    - uses: actions/checkout@v2
-    - name: Let Docker Compose build and start
-      run: docker-compose up
+    - uses: actions/checkout@v4
+    - name: Run docker-compose
+      uses: hoverkraft-tech/compose-action@v2.0.1
     # - name: Migrate and Run Tests
     #   run: |
     #     python manage.py migrate --verbosity 3
