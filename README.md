@@ -18,36 +18,15 @@ View the API docs at /swagger/.
 # Structure
 
 The Django application requires
-- a AWS S3 server for uploaded attachments (like PDFs)
-- a PostgreSQL DB for Django, the models, etc.
+- optonally: a AWS S3 server for uploaded attachments (like PDFs)
 View the [documentation](TODO lol).
+
+It can be set up as a container pair (django - db) or using a lightweight sqlite3.
 
 
 # Setting up
 
-## A: As Docker Container
-
-(Start external Postgres server.)
-
-1. Build App Image via  `docker build -t django-docker:0.0.1 .`
-2. Create, start (and rebuild) App Container via `docker compose up --build`
-
-Start without rebuilding via `docker-compose up`.
-
-## B: Locally
-
-### 1 Databases
-
-1. Set up an empty PostgreSQL DB and remember its connection data ([Starting Tutorial](https://www.youtube.com/watch?v=4VGzRYF3q-o), but with a few tweaks: TODO link Obsidian Tutorial).
-  -  Let Container auto start via `docker update --restart always <container_name>`
-3. Set up an AWS S3 Bucket and remember its connection data ([Tutorial](https://www.youtube.com/watch?v=Ko52pn1KXS0)).
-
-### 2 Locally
-
-1. Create venv: ```python3 -m venv venv```
-2. Activate venv: ```source venv/bin/activate```
-3. Install dependencies: ```pip3 install -r requirements.txt```
-4. Create an .env in the project's root folder and fill it using the exact following structure:
+Create the following .env file:
 
 ```js
 SECRET_KEY="django_secret_key"
@@ -60,18 +39,33 @@ DB_PASSWORD="ens_password"
 DB_HOST="OPTIONAL-host_if_remote"
 DB_PORT="OPTIONAL-port_if_different"
 
-AWS_STORAGE_BUCKET_NAME="bucket_name_of_s3"
-AWS_S3_REGION_NAME="region"
-AWS_ACCESS_KEY_ID="access_key"
-AWS_SECRET_ACCESS_KEY="secret_access_key"
-
 ALLOWED_HOSTS="where_to_deploy_website"
 DEBUG="OPTIONAL-true_if_in_dev"
 LOCAL="OPTIONAL-true_if_working_locally_with_attachments_instead_of_on_s3"
 ```
 
+## A: As Docker Container
 
-## Execution
+Set up an AWS S3 Bucket and remember its connection data ([Tutorial](https://www.youtube.com/watch?v=Ko52pn1KXS0)).
+
+Add the following to the .env:
+
+```js
+AWS_STORAGE_BUCKET_NAME="bucket_name_of_s3"
+AWS_S3_REGION_NAME="region"
+AWS_ACCESS_KEY_ID="access_key"
+AWS_SECRET_ACCESS_KEY="secret_access_key"
+```
+
+Start Container via `docker-compose up --build -d`.
+When shutting system for debugging, remember to reset volumes via `docker-compose down -v`.
+
+## B: Locally
+
+1. Create venv: ```python3 -m venv venv```
+2. Activate venv: ```source venv/bin/activate```
+3. Install dependencies: ```pip3 install -r requirements.txt```
+4. Create an .env in the project's root folder and fill it using the exact following structure:
 
 - Start server via ```python manage.py runserver```
 - Locally execute the tests via ```python manage.py test```
