@@ -41,7 +41,7 @@ jobs:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       PERSONAL_TEACHER_CODE: ${{ secrets.PERSONAL_TEACHER_CODE }}
       LOCAL: ${{ secrets.LOCAL }}
-      
+
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
@@ -62,6 +62,14 @@ jobs:
       uses: docker://docker/compose:latest
       with:
         args: up --build -d
+    - name: DEBUG django venvs
+      uses: docker://docker/compose:latest
+      with:
+        args: exec django env
+    - name: DEBUG db venvs
+      uses: docker://docker/compose:latest
+      with:
+        args: exec db env
     - name: Migrate
       uses: docker://docker/compose:latest
       with:
