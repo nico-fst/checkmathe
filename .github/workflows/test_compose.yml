@@ -9,4 +9,6 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - name: Run docker-compose
-              run: docker-compose up --build -d
+              uses: docker://docker/compose:latest
+              with:
+                args: up --build -d
