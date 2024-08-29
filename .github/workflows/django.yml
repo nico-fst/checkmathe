@@ -26,11 +26,11 @@ jobs:
       uses: docker://docker/compose:latest
       with:
         args: up --build -d
-    - name: Enter Django Container's Shell
+    - name: Migrate
       uses: docker://docker/compose:latest
       with:
-        args: exec -T django /bin/bash
-    - name: Migrate, Run Tests
-      run: |
-        python manage.py migrate --verbosity 3
-        python manage.py test
+        args: exec -T django python manage.py migrate --verbosity 3
+    - name: Run Tests
+      uses: docker://docker/compose:latest
+      with:
+        args: exec -T django python manage.py test
