@@ -2,6 +2,7 @@ version: '3'
 
 services:
   django:
+    # eigenes mit Dockerfile wegen build . gebaut
     image: django-docker:0.0.1
     build: .
     ports:
