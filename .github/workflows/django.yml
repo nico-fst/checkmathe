@@ -19,9 +19,9 @@ jobs:
       LOCAL: ${{ secrets.LOCAL }}
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     - name: Let Docker Compose build and start
-      run: docker-compose -f "docker-compose.yml" up -d --build
+      run: docker-compose up
     # - name: Migrate and Run Tests
     #   run: |
     #     python manage.py migrate --verbosity 3
