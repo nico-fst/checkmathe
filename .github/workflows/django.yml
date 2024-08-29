@@ -29,6 +29,5 @@ jobs:
     - name: Migrate and Run Tests
       run: |
         docker ps
-        docker exec -it workspace_django_1 /bin/bash
-        # python manage.py migrate --verbosity 3
-        # python manage.py test
+        docker exec -it workspace_django_1 python manage.py migrate --verbosity 3
+        docker exec -it workspace_django_1 python manage.py test
