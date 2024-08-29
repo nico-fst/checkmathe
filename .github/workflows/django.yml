@@ -35,43 +35,43 @@ jobs:
       with:
         args: exec -T django python manage.py test
 
-  DEV:
-    needs: LOCAL
-    strategy:
-      matrix:
-        python-version: [3.7, 3.9, 3.11]
+  # DEV:
+  #   needs: LOCAL
+  #   strategy:
+  #     matrix:
+  #       python-version: [3.7, 3.9, 3.11]
 
-    runs-on: ubuntu-latest
-    environment: DEV
-    env:
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      DB_NAME: ${{ secrets.DB_NAME }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      DB_ENGINE: ${{ secrets.DB_ENGINE }}
-      PERSONAL_TEACHER_CODE: ${{ secrets.PERSONAL_TEACHER_CODE }}
+  #   runs-on: ubuntu-latest
+  #   environment: DEV
+  #   env:
+  #     SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  #     DB_NAME: ${{ secrets.DB_NAME }}
+  #     DB_USER: ${{ secrets.DB_USER }}
+  #     DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  #     DB_HOST: ${{ secrets.DB_HOST }}
+  #     DB_PORT: ${{ secrets.DB_PORT }}
+  #     DB_ENGINE: ${{ secrets.DB_ENGINE }}
+  #     PERSONAL_TEACHER_CODE: ${{ secrets.PERSONAL_TEACHER_CODE }}
 
-      AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
-      AWS_S3_REGION_NAME: ${{ secrets.AWS_S3_REGION_NAME }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      LOCAL: ${{ secrets.LOCAL }}
+  #     AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
+  #     AWS_S3_REGION_NAME: ${{ secrets.AWS_S3_REGION_NAME }}
+  #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #     LOCAL: ${{ secrets.LOCAL }}
 
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v2
-    - name: Run docker-compose
-      uses: docker://docker/compose:latest
-      with:
-        args: up --build -d
-    - name: Migrate
-      uses: docker://docker/compose:latest
-      with:
-        args: exec -T django python manage.py migrate --verbosity 3
-    - name: Run Tests
-      uses: docker://docker/compose:latest
-      with:
-        args: exec -T django python manage.py test
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Set up Docker
+  #     uses: docker/setup-buildx-action@v2
+  #   - name: Run docker-compose
+  #     uses: docker://docker/compose:latest
+  #     with:
+  #       args: up --build -d
+  #   - name: Migrate
+  #     uses: docker://docker/compose:latest
+  #     with:
+  #       args: exec -T django python manage.py migrate --verbosity 3
+  #   - name: Run Tests
+  #     uses: docker://docker/compose:latest
+  #     with:
+  #       args: exec -T django python manage.py test
