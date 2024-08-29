@@ -26,7 +26,8 @@ jobs:
       uses: docker://docker/compose:latest
       with:
         args: up --build -d
-    # - name: Migrate and Run Tests
-    #   run: |
-    #     python manage.py migrate --verbosity 3
-    #     python manage.py test
+    - name: Migrate and Run Tests
+      run: |
+        docker exec -it django-docker /bin/bash
+        python manage.py migrate --verbosity 3
+        python manage.py test
