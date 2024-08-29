@@ -20,10 +20,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Docker Compose
-      uses: docker/compose-action@v2
     - name: Let Docker Compose build and start
-      run: docker-compose up -d --build
+      run: docker-compose -f "docker-compose.yml" up -d --build
     # - name: Migrate and Run Tests
     #   run: |
     #     python manage.py migrate --verbosity 3
