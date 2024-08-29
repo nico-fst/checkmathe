@@ -1,0 +1,12 @@
+name: Test Docker-Compose
+
+on: push
+
+jobs:
+    build:
+        runs-on: ubuntu-20.04
+        
+        steps:
+            - uses: actions/checkout@v4
+            - name: Run docker-compose
+              run: docker-compose up --build -d
