@@ -29,7 +29,8 @@ jobs:
     - name: Migrate and Run Tests
       uses: docker://docker/compose:latest
       with:
-        args: exec -T django python manage.py migrate --verbosity 3
+        args: exec -T django /bin/bash
+        # args: exec -T django python manage.py migrate --verbosity 3
     #   run: |
     #     docker ps
     #     docker exec -it workspace_django_1 python manage.py migrate --verbosity 3
