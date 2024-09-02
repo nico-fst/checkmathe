@@ -101,4 +101,4 @@ A collection of tutorials that I found to be quite precise:
 
 # Debug Nightmares
 
-- Beim Umstieg von der pg-DB als zweiten Container war wichtig, dass **alle** env Werte in Github als Secrets angegeben sind.
+- Beim Umstieg von der pg-DB als zweiten Container war wichtig, dass **alle** env Werte in Github als Secrets angegeben sind.- 404: bei manueller Uebernahme von .env secrets: *alle* weitergeben (zB ALLOWED_HOSTS)
